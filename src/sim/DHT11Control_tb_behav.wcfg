@@ -10,18 +10,18 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="3636000000fs"></ZoomStartTime>
-      <ZoomEndTime time="4410500001fs"></ZoomEndTime>
-      <Cursor1Time time="3965000000fs"></Cursor1Time>
+      <ZoomStartTime time="88785484285fs"></ZoomStartTime>
+      <ZoomEndTime time="102242903143fs"></ZoomEndTime>
+      <Cursor1Time time="100000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="269"></NameColumnWidth>
-      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+      <NameColumnWidth column_width="249"></NameColumnWidth>
+      <ValueColumnWidth column_width="106"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="31" />
    <wave_markers>
-      <marker time="1375000000" label="" />
       <marker time="2735000000" label="" />
+      <marker time="2175000000" label="" />
    </wave_markers>
    <wvobject fp_name="/DHT11Control_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
@@ -38,10 +38,6 @@
    <wvobject fp_name="/DHT11Control_tb/trg" type="logic">
       <obj_property name="ElementShortName">trg</obj_property>
       <obj_property name="ObjectShortName">trg</obj_property>
-   </wvobject>
-   <wvobject fp_name="/DHT11Control_tb/inTSample" type="array">
-      <obj_property name="ElementShortName">inTSample[7:0]</obj_property>
-      <obj_property name="ObjectShortName">inTSample[7:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider14">
       <obj_property name="label">Out-Values</obj_property>
@@ -119,6 +115,30 @@
       <obj_property name="ElementShortName">actData[39:0]</obj_property>
       <obj_property name="ObjectShortName">actData[39:0]</obj_property>
    </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/uut/chkSum" type="array">
+      <obj_property name="ElementShortName">chkSum[7:0]</obj_property>
+      <obj_property name="ObjectShortName">chkSum[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/uut/sr_reset" type="logic">
+      <obj_property name="ElementShortName">sr_reset</obj_property>
+      <obj_property name="ObjectShortName">sr_reset</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider469">
+      <obj_property name="label">DataOutPrep</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/uut/stDataSmplReg" type="other">
+      <obj_property name="ElementShortName">stDataSmplReg</obj_property>
+      <obj_property name="ObjectShortName">stDataSmplReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/uut/dataSampleReg" type="array">
+      <obj_property name="ElementShortName">dataSampleReg[39:0]</obj_property>
+      <obj_property name="ObjectShortName">dataSampleReg[39:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/uut/dataStatusReg" type="array">
+      <obj_property name="ElementShortName">dataStatusReg[1:0]</obj_property>
+      <obj_property name="ObjectShortName">dataStatusReg[1:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="group196" type="group">
       <obj_property name="label">DHT11-Simulation</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -134,6 +154,47 @@
       <wvobject fp_name="/DHT11Control_tb/dhtState" type="other">
          <obj_property name="ElementShortName">dhtState</obj_property>
          <obj_property name="ObjectShortName">dhtState</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group610" type="group">
+      <obj_property name="label">TestSettings</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/DHT11Control_tb/t_trigin" type="other">
+         <obj_property name="ElementShortName">t_trigin</obj_property>
+         <obj_property name="ObjectShortName">t_trigin</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/t_wakeup" type="other">
+         <obj_property name="ElementShortName">t_wakeup</obj_property>
+         <obj_property name="ObjectShortName">t_wakeup</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/t_startL" type="other">
+         <obj_property name="ElementShortName">t_startL</obj_property>
+         <obj_property name="ObjectShortName">t_startL</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/t_startH" type="other">
+         <obj_property name="ElementShortName">t_startH</obj_property>
+         <obj_property name="ObjectShortName">t_startH</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/t_bitL" type="other">
+         <obj_property name="ElementShortName">t_bitL</obj_property>
+         <obj_property name="ObjectShortName">t_bitL</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/t_bitH0" type="other">
+         <obj_property name="ElementShortName">t_bitH0</obj_property>
+         <obj_property name="ObjectShortName">t_bitH0</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/t_bitH1" type="other">
+         <obj_property name="ElementShortName">t_bitH1</obj_property>
+         <obj_property name="ObjectShortName">t_bitH1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/txData" type="array">
+         <obj_property name="ElementShortName">txData[39:0]</obj_property>
+         <obj_property name="ObjectShortName">txData[39:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11Control_tb/expectResult" type="other">
+         <obj_property name="ElementShortName">expectResult</obj_property>
+         <obj_property name="ObjectShortName">expectResult</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

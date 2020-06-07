@@ -42,7 +42,6 @@ entity DHT11Control is
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
         outStatus:      out std_logic_vector(1 downto 0);       -- status out: [1]: sample available; [0]: error
-        inTSample:      in std_logic_vector(7 downto 0);        -- sample time 1... 256s for auto trigger; 0: sample on trg
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -80,10 +79,10 @@ constant CNT_DLY_TIMEOUT:   integer := 20;                      -- general timeo
 
 type tSmplStates is (stPowOn, stPowOnDly, stIdle,
                     stTrgSampling, stWaitStartBitHigh,
-                    stDHTStartBitLow, stWaitDHTStartBitLow, stWaitDHTStartBitHigh,
+                    stWaitDHTStartBitLow, stWaitDHTStartBitHigh,
                     stWaitTxHigh, stWaitTxLow, stShiftLow, stShiftHigh,
-                    stStoreResult, stDly,
-                    stError);
+                    stChkSum, stStoreResult, stDly,
+                    stErrWaitEnd, stError);
 signal stSmplReg:       tSmplStates;
 signal stSmplNxt:       tSmplStates;
 signal smplCntReg:      std_logic_vector(CNT_BITS-1 downto 0);
@@ -91,13 +90,33 @@ signal smplCntNxt:      std_logic_vector(CNT_BITS-1 downto 0);
 signal cntMax:          std_logic_vector(CNT_BITS-1 downto 0);
 
 -- Data In register and bit counter
-constant DHTDATALEN:    integer := 40;
+constant DHTDATA_X_BOT: integer := 0;
+constant DHTDATA_X_TOP: integer := 8;
+constant DHTDATA_T_BOT: integer := DHTDATA_X_TOP;
+constant DHTDATA_T_TOP: integer := DHTDATA_T_BOT + 16;
+constant DHTDATA_H_BOT: integer := DHTDATA_T_TOP;
+constant DHTDATA_H_TOP: integer := DHTDATA_H_BOT + 16;
+
+constant DHTDATALEN:    integer := DHTDATA_H_TOP;
 constant DHTBITLEN:     integer := 6;
+
+
 signal actBit:          std_logic;
 signal shiftEnable:     std_logic;
-signal actData:         std_logic_vector(DHTDATALEN-1 downto 0);
+signal actData:         std_logic_vector(DHTDATALEN-1 downto 0);    -- data from shift register
 signal bitCntNxt:       std_logic_vector(DHTBITLEN-1 downto 0);
 signal bitCntReg:       std_logic_vector(DHTBITLEN-1 downto 0);
+signal chkSum:          std_logic_vector(DHTDATA_X_TOP-1 downto DHTDATA_X_BOT);
+signal sr_reset:        std_logic;
+
+-- preparing output data state machine
+type tDataSmpl is (stPowOn, stChkNewData);
+signal stDataSmplReg:   tDataSmpl;
+signal stDataSmplNxt:   tDataSmpl;
+signal dataSampleReg:   std_logic_vector(DHTDATALEN-1 downto 0);    -- final sample after finishing read
+signal dataSampleNxt:   std_logic_vector(DHTDATALEN-1 downto 0);    -- final sample after finishing read
+signal dataStatusReg:   std_logic_vector(1 downto 0);               -- status information
+signal dataStatusNxt:   std_logic_vector(1 downto 0);               -- status information
 
 -- shift register for input data
 component ShiftLeft is
@@ -158,6 +177,9 @@ dhtOutSig <= '0' when (stSmplReg = stTrgSampling) else '1';
 rdy <= '1' when (stSmplReg = stIdle) else '0';
 actBit <= '1' when (stSmplReg = stShiftHigh) else '0';
 shiftEnable <= '1' when (((stSmplReg = stShiftHigh) or (stSmplReg = stShiftLow)) and (tickPreCnt = '1')) else '0';
+chkSum <= actData(15 downto 8) + actData(23 downto 16) + actData(31 downto 24) + actData(39 downto 32);
+
+sr_reset <= '1' when reset = '1' or (stDataSmplReg = stPowOn) else '0';
 
 dataRegister: ShiftLeft
     generic map (
@@ -165,7 +187,7 @@ dataRegister: ShiftLeft
     )
     port map (
     clk             => clk,
-    reset           => reset,
+    reset           => sr_reset,
     setEnable       => '0',   
     dataIn          => (others => '0'),
     dataBit         => actBit,
@@ -173,6 +195,46 @@ dataRegister: ShiftLeft
     dataOut         => actData     
     );
     
+out_smpl_reg: process(clk, reset)
+begin
+    if rising_edge(clk) then
+        if reset = '1' then
+            stDataSmplReg <= stPowOn;
+            dataSampleReg <= (others => '0');
+            dataStatusReg <= (others => '0');
+        else
+            stDataSmplReg <= stDataSmplNxt;
+            dataSampleReg <= dataSampleNxt;
+            dataStatusReg <= dataStatusNxt;
+        end if;
+    end if;
+end process out_smpl_reg;
+
+out_smpl_nxt: process(tickPreCnt, stDataSmplReg, stSmplReg)
+begin
+    stDataSmplNxt <= stDataSmplReg;
+    dataSampleNxt <= dataSampleReg;
+    dataStatusNxt <= dataStatusReg;
+    case stDataSmplReg is
+        when stPowOn =>
+            dataSampleNxt <= (others => '0');
+            dataStatusNxt <= (others => '0');
+            stDataSmplNxt <= stChkNewData;
+        when stChkNewData =>
+            if tickPreCnt = '1' and (stSmplReg = stStoreResult) then
+                dataSampleNxt <= actData;
+                dataStatusNxt <= "10"; 
+            elsif tickPreCnt = '1' and (stSmplReg = stError) then
+                dataSampleNxt <= (others => '0');
+                dataStatusNxt <= "11"; 
+            end if;
+     end case;
+end process out_smpl_nxt;
+
+outH <= dataSampleReg(DHTDATA_H_TOP-1 downto DHTDATA_H_BOT);
+outT <= dataSampleReg(DHTDATA_T_TOP-1 downto DHTDATA_T_BOT);
+outStatus <= dataStatusReg;
+
 smpl_state_proc_reg: process(clk, reset, tickPreCnt)
 begin
     if rising_edge(clk) then
@@ -233,7 +295,7 @@ begin
                     if smplCntReg < CNT_DLY_BITL_MX then
                         stSmplNxt <= stWaitDHTStartBitHigh;
                     else
-                        stSmplNxt <= stError;
+                        stSmplNxt <= stErrWaitEnd;
                     end if;
                 end if;
             end if;   
@@ -246,7 +308,7 @@ begin
                     if smplCntReg < CNT_DLY_BITL_MX then
                         stSmplNxt <= stDly;
                     else
-                        stSmplNxt <= stError;
+                        stSmplNxt <= stErrWaitEnd;
                     end if;
                 end if;
             end if;   
@@ -258,12 +320,12 @@ begin
                 smplCntNxt <= (others => '0');
                 if smplCntReg >= CNT_DLY_TXL_MN then
                     if bitCntReg = DHTDATALEN then
-                        stSmplNxt <= stStoreResult;
+                        stSmplNxt <= stChkSum;
                     else
                         if smplCntReg < CNT_DLY_TXL_MX then
                             stSmplNxt <= stWaitTxLow;
                         else
-                            stSmplNxt <= stError;
+                            stSmplNxt <= stErrWaitEnd;
                         end if;
                     end if;
                 end if;
@@ -277,12 +339,12 @@ begin
                         -- found BITx = 0
                         stSmplNxt <= stShiftLow;
                     elsif smplCntReg < CNT_DLY_TXH1_MN then 
-                        stSmplNxt <= stError;
+                        stSmplNxt <= stErrWaitEnd;
                     elsif smplCntReg < CNT_DLY_TXH1_MX then
                         -- found BITx = 1
                         stSmplNxt <= stShiftHigh;
                     else
-                        stSmplNxt <= stError;
+                        stSmplNxt <= stErrWaitEnd;
                     end if;
                 end if;
             else
@@ -296,11 +358,29 @@ begin
         when stShiftHigh =>    
             stSmplNxt <= stWaitTxHigh;
             bitCntNxt <= bitcntReg + 1;
+        when stChkSum =>
+            if chkSum = actData(DHTDATA_X_TOP-1 downto DHTDATA_X_BOT) then
+                stSmplNxt <= stStoreResult;
+            else
+               stSmplNxt <= stError;
+            end if;
         when stStoreResult =>
             stSmplNxt <= stIdle;
-        when others =>
+        when stErrWaitEnd =>
+            -- wait CNT_DLY_TIMEOUT times that input remains high
+            smplCntNxt <= smplCntReg + 1;
+            if dhtInSig = '0' then
+                -- reset counter 
+                smplCntNxt <= (others => '0');
+            end if;
+            if smplCntReg > CNT_DLY_TIMEOUT then
+                stSmplNxt <= stError;
+            end if;
+        when stError =>
+            stSmplNxt <= stIdle;
     end case;
 end process smpl_state_proc_nxt;
+
 
 
 end Behavioral;
