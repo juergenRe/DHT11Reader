@@ -1,15 +1,13 @@
 # DHT11 Reader
+Component to read DHT11 humidity and temperature sensor via AXI-interface. 
+
 Created for Vivado 2019.1
-Component to read DHT11 humidity and temperature sensor via AXI-interface
 
 Register description:
-Register 1: (write-only) Bit31: Enable; Bit30: AutoTrigger; Bit 7..0: delay in s. 0: disable autotrigger
-Register 2: (read-only) Stauts Bit 31: new sample; bit 30: error during transmission, sample incorrect. Bits will be reset after reading register 3.
-Register 3: (read-only) Bits 31..24: Humidity integral
-						Bits 23..16: Humidity fractional
-						Bits 15..8:  Temperature integral 
-						Bits  7..0:  Temperature fractional
-Register 4: unused
+- Register 1: (write-only) Bit31: Enable; Bit30: AutoTrigger; Bit 7..0: delay in s. 0: disable autotrigger
+- Register 2: (read-only) Stauts Bit 31: new sample; bit 30: error during transmission, sample incorrect. Bits will be reset after reading register 3.
+- Register 3: (read-only) Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
+- Register 4: unused
 
 ## Recreating the project
 This should be done using the scripts in /proj subfolder:
