@@ -22,6 +22,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.all;
+use IEEE.numeric_std.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -92,6 +93,7 @@ type t_testdata is record
       timings   : t_timing_ary(0 to NB_TIMES-1);	-- timing array
 	  data	    : std_logic_vector(31 downto 0); 	-- data to transmit
 	  expectRes	: boolean;						    -- expected result
+	  desc      : string(1 to 40);                      -- description string
 end record;
 type t_test_ary is array (natural range <>) of t_testdata;
 
@@ -102,7 +104,7 @@ type t_test_ary is array (natural range <>) of t_testdata;
   -- an ordered array of timings and data to transmit.
   ------------------------------------------------------------------------------
 constant test_data : t_test_ary := (
-    0       => (
+    0       => (            -- good timing
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
@@ -111,13 +113,168 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => true)
+      expectRes => true,
+      desc      => "<1> Good timings A                      "),
+    1       => (            -- good timing
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"00000000",
+      expectRes => true,
+      desc      => "<2> Good timings B                      "),
+    2       => (            -- good timing
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"FFFFFFFF",
+      expectRes => true,
+      desc      => "<3> Good timings C                      "),
+    3       => (            -- wake up too long
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE *5,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<4> Wake up too long                    "),
+    4       => (            -- Start bit "0" DHT too short
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL / MULT * 2,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<5> Start bit DHT too short             "),
+    5       => (            -- Start bit "0" DHT too long
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL * 3,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<6> Start bit DHT too long              "),
+    6       => (            -- Start bit "1" DHT too short
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH / MULT * 2,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<7> Start bit DHT High too short        "),
+    7       => (            -- Start bit "1" DHT too long
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH * 3,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<8> Start bit DHT High too long         "),
+    8       => (            -- TXLow phase too short
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,
+                     4 => TBITL / MULT * 2,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<9> TX Bit low too short                "),
+    9       => (            -- TXLow phase too long
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL * 3,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<10> TX Bit low too long                "),
+    10      => (            -- TXHigh phase too short (less than '0' bit length)
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,
+                     4 => TBITL,  
+                     5 => TBITH0 / MULT * 2,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<11> TX Bit High too short for '0'      "),
+      --           "0123456789012345678901234567890123456789"
+    11      => (            -- TXHigh phase too long for '0'
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0 * 3,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<12> TX Bit High too long for '0'       "),
+      --           "0123456789012345678901234567890123456789"
+    12      => (            -- TXHigh phase too short for '1'
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1 / MULT * 2),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<13> TX Bit High too short for '1'      "),
+      --           "0123456789012345678901234567890123456789"
+    13      => (            -- TXHigh phase too long for '1'
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1 * 3),
+      data      => x"5577AA33",
+      expectRes => false,
+      desc      => "<14> TX Bit High too long for '1'       ")
+      --           "0123456789012345678901234567890123456789"
       ); 
+
+type t_testState is (stPowOn, stIdle, stTestSetUp, stTestStart, stTestRun, stTestEnd);
+signal testStateReg:    t_testState;
+signal testStateNxt:    t_testState;
+signal startTest:       std_logic;
+signal testDone:        std_logic;
+signal testCnt:         unsigned(3 downto 0);       -- holds the current test index
 
 ----------------------------------------------------------------
 -- DHT11 states 
 
-type t_dhtState is (  stPowOn, stIdle, srSetTimings,
+type t_dhtState is (  stPowOn, stIdle, 
                         stRcvStartBit, stWakeUp, 
                         stTxStartBitLow, stTxStartBitHigh, 
                         stTxBitLow, stTxBitHigh1, stTxBitHigh0);
@@ -143,6 +300,11 @@ component DHT11Control
         dhtOutSig:      out std_logic                           -- output line to DHT11
      );
 end component;
+
+procedure wrOut (arg : in string := "") is
+begin
+  std.textio.write(std.textio.output, arg & LF);
+end procedure wrOut;
 
 begin
     uut: DHT11Control
@@ -176,36 +338,58 @@ begin
     stim_proc: process
     begin
         -- check behaviour when no reset is given
+        startTest <= '0';
         wait for 200 ns;
         reset <= '1';
         wait for 100ns;
         reset <= '0';
 		wait until rdy = '1';
 		wait for 200ns;
-		wait until clk = '0';
-		trg <= '1';
-		wait until rdy = '0';
-		wait until clk = '0';
-		trg <= '0';
+		wait until rising_edge(clk);
+		--wait until testDone = '1';
+		startTest <= '1';
+		wait until rising_edge(clk);
+		wait until testDone = '0';
+		wait until rising_edge(clk);
+		startTest <= '0';
+		wait until testDone = '1';
 		
-		wait for 100us;
+		wait for 100ns;
+		assert false report "Simulation done" severity failure;
 	end process;
 	
 	dhtInSig <= '0' when ((dhtState = stTxStartBitLow) or (dhtState = stTxBitLow)) else '1';
 
 ----------------------------------------------------------------------------------
--- DHT11 sensor simulation
-    dht11simu_proc: process
-        variable bitcnt: integer := 0;
-        variable txBit: std_logic;
-        variable dataVal: std_logic_vector(31 downto 0);
+-- traverse through test sets triggered by trg signal
+    dht11_test_pattern_reg: process(clk, reset)
+    begin
+        if rising_edge(clk) then
+            if reset = '1' then
+                testStateReg <= stPowOn;
+            else
+                testStateReg <= testStateNxt;
+            end if;
+        end if;
+    end process dht11_test_pattern_reg;
+    
+    testDone <= '1' when (testStateReg = stIdle) else '0';
+
+    dht11_test_pattern_nxt: process(testStateReg, startTest, rdy)
+        variable actIdx:    integer := 0;
+        variable dataVal:   std_logic_vector(31 downto 0);
+        variable er:        boolean;
+        variable desc:      string(1 to 40);
+        variable res:       integer;
+        variable stat:      boolean;
+        
         function calc_crc ( data : in std_logic_vector) return std_logic_vector is
             variable crc: std_logic_vector(7 downto 0);
 		begin
 		    crc := data(31 downto 24) + data(23 downto 16) + data(15 downto 8) + data(7 downto 0);
 		    return crc;
 		end;
-        procedure getActData(idx: in natural; dx: out std_logic_vector) is
+        procedure getActData(idx: in natural; dx: out std_logic_vector; expectResult: out boolean; desc: out string) is
         begin
             dx := test_data(idx).data;
             t_trigin <= test_data(idx).timings(0);
@@ -215,8 +399,62 @@ begin
             t_bitL  <= test_data(idx).timings(4);
             t_bitH0 <= test_data(idx).timings(5);
             t_bitH1 <= test_data(idx).timings(6);
-            expectResult <= test_data(idx).expectRes;
+            expectResult := test_data(idx).expectRes;
+            desc := test_data(idx).desc;
         end;
+    begin
+        case testStateReg is
+            when stPowOn =>
+                testStateNxt <= stIdle;
+                testCnt <= (others => '0');
+            when stIdle =>
+                actIdx := 0;
+                if startTest = '1' and rdy = '1' then
+                    testStateNxt <= stTestSetUp;
+                end if;
+            when stTestSetUp =>
+                testCnt <= TO_UNSIGNED(actIdx, 4);
+                getActData(actIdx, dataVal, er, desc);
+                txData <= dataVal & calc_crc(dataVal);
+                wrOut("---------------------------------------------");
+                wrOut("Start Test: " & desc);
+                testStateNxt <= stTestStart;
+            when stTestStart =>
+                trg <= '1';
+                if rdy = '0' then
+                    testStateNxt <= stTestRun;
+                    trg <= '0';
+                end if;
+            when stTestRun => 
+                -- executing reception, wait till finished
+                if rdy = '1' then
+                    res := conv_integer(outH & outT);
+                    stat := (outStatus(0) = '1');
+                    assert er xor stat
+                        report "Expected status unequal er=" & boolean'image(er) & " => status=" & boolean'image(stat) severity error;
+                    if not stat then
+                        assert res = conv_integer(dataVal)
+                            report "Expected data values unequal data=" & integer'image(conv_integer(dataVal)) & " => outH/T: " & integer'image(res) severity error;
+                    end if;
+                    testStateNxt <= stTestSetUp;
+
+                    actIdx := actIdx + 1;
+                    if actIdx = test_data'length then
+                        testStateNxt <= stTestEnd;
+                    end if;
+                end if;
+            when stTestEnd =>
+                wrOut("---------------------------------------------");
+                wrOut("Test done");
+                testStateNxt <= stIdle; 
+        end case;
+    end process dht11_test_pattern_nxt;
+    
+----------------------------------------------------------------------------------
+-- DHT11 sensor simulation
+    dht11simu_proc: process
+        variable bitcnt: integer := 0;
+        variable txBit: std_logic;
     begin
         wait until rising_edge(clk);
         if reset = '1' then
@@ -229,13 +467,9 @@ begin
                 when stIdle =>
                     wait until dhtOutSig = '0';
                     bitcnt := 39;
-                    dhtState <= srSetTimings;
-                when srSetTimings =>
-                    getActData(0, dataVal);
-                    txData <= dataVal & calc_crc(dataVal);
                     dhtState <= stRcvStartBit;
                 when stRcvStartBit =>
-                    wait for t_trigin;
+                    wait for t_trigin;  
                     if dhtOutSig = '1' then
                         dhtState <= stIdle;
                     else

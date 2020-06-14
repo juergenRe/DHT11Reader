@@ -10,18 +10,19 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="88785484285fs"></ZoomStartTime>
-      <ZoomEndTime time="102242903143fs"></ZoomEndTime>
-      <Cursor1Time time="100000000000fs"></Cursor1Time>
+      <ZoomStartTime time="2866000000fs"></ZoomStartTime>
+      <ZoomEndTime time="4435000001fs"></ZoomEndTime>
+      <Cursor1Time time="3785000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="249"></NameColumnWidth>
-      <ValueColumnWidth column_width="106"></ValueColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="31" />
+   <WVObjectSize size="36" />
    <wave_markers>
-      <marker time="2735000000" label="" />
-      <marker time="2175000000" label="" />
+      <marker time="2865000000" label="" />
+      <marker time="2014856000" label="" />
+      <marker time="159435000000" label="" />
    </wave_markers>
    <wvobject fp_name="/DHT11Control_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
@@ -155,6 +156,27 @@
          <obj_property name="ElementShortName">dhtState</obj_property>
          <obj_property name="ObjectShortName">dhtState</obj_property>
       </wvobject>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider91">
+      <obj_property name="label">TestData</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/startTest" type="logic">
+      <obj_property name="ElementShortName">startTest</obj_property>
+      <obj_property name="ObjectShortName">startTest</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/testDone" type="logic">
+      <obj_property name="ElementShortName">testDone</obj_property>
+      <obj_property name="ObjectShortName">testDone</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/testStateReg" type="other">
+      <obj_property name="ElementShortName">testStateReg</obj_property>
+      <obj_property name="ObjectShortName">testStateReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11Control_tb/testCnt" type="array">
+      <obj_property name="ElementShortName">testCnt[3:0]</obj_property>
+      <obj_property name="ObjectShortName">testCnt[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="group610" type="group">
       <obj_property name="label">TestSettings</obj_property>

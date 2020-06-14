@@ -41,7 +41,7 @@ entity DHT11Control is
         reset:          in std_logic;
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [1]: sample available; [0]: error
+        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [0]: error [1]: unused
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -272,6 +272,7 @@ begin
         when stIdle =>
             if trg = '1' then
                 stSmplNxt <= stTrgSampling;
+                smplCntNxt <= (others => '0');
             end if;
         when stTrgSampling =>           -- drive output to DHT low for > 18ms
             smplCntNxt <= smplCntReg + 1;
@@ -285,7 +286,7 @@ begin
                 stSmplNxt <= stWaitDHTStartBitLow;
                 smplCntNxt <= (others => '0');
             elsif smplCntReg > CNT_DLY_WAIT then
-                stSmplNxt <= stError;
+                stSmplNxt <= stErrWaitEnd;
             end if;
         when stWaitDHTStartBitLow =>
             smplCntNxt <= smplCntReg + 1;
@@ -297,6 +298,8 @@ begin
                     else
                         stSmplNxt <= stErrWaitEnd;
                     end if;
+                else
+                    stSmplNxt <= stErrWaitEnd;
                 end if;
             end if;   
         when stWaitDHTStartBitHigh =>
@@ -310,11 +313,13 @@ begin
                     else
                         stSmplNxt <= stErrWaitEnd;
                     end if;
+                else
+                    stSmplNxt <= stErrWaitEnd;
                 end if;
             end if;   
-        when stDly =>
+        when stDly =>               -- needed to compensate for chksum treatment in counting delays
             stSmplNxt <= stWaitTxHigh;       
-        when stWaitTxHigh =>
+        when stWaitTxHigh =>        -- wait for rising edge of input signal to check low phase
             smplCntNxt <= smplCntReg + 1;
             if dhtInSig = '1' then
                 smplCntNxt <= (others => '0');
@@ -330,7 +335,7 @@ begin
                     end if;
                 end if;
             end if;   
-        when stWaitTxLow =>
+        when stWaitTxLow =>         -- wait for falling edge of input signal to check high phase and determine bit value
             smplCntNxt <= smplCntReg + 1;
             if dhtInSig = '0' then
                 smplCntNxt <= (others => '0');
