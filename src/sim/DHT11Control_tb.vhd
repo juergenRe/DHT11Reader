@@ -93,7 +93,8 @@ type t_testdata is record
       timings   : t_timing_ary(0 to NB_TIMES-1);	-- timing array
 	  data	    : std_logic_vector(31 downto 0); 	-- data to transmit
 	  expectRes	: boolean;						    -- expected result
-	  desc      : string(1 to 40);                      -- description string
+	  expectSC  : boolean;                          -- expected short circuit detection
+	  desc      : string(1 to 40);                  -- description string
 end record;
 type t_test_ary is array (natural range <>) of t_testdata;
 
@@ -113,8 +114,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => true,
-      desc      => "<1> Good timings A                      "),
+      expectRes => false,
+      expectSC => false,
+      desc      => "<0> Good timings A                      "),
     1       => (            -- good timing
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -124,8 +126,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"00000000",
-      expectRes => true,
-      desc      => "<2> Good timings B                      "),
+      expectRes => false,
+      expectSC => false,
+      desc      => "<1> Good timings B                      "),
     2       => (            -- good timing
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -135,8 +138,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"FFFFFFFF",
-      expectRes => true,
-      desc      => "<3> Good timings C                      "),
+      expectRes => false,
+      expectSC => false,
+      desc      => "<2> Good timings C                      "),
     3       => (            -- wake up too long
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE *5,
@@ -146,8 +150,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<4> Wake up too long                    "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<3> Wake up too long                    "),
     4       => (            -- Start bit "0" DHT too short
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -157,30 +162,33 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<5> Start bit DHT too short             "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<4> Start bit DHT too short             "),
     5       => (            -- Start bit "0" DHT too long
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
-                     2 => TSTRTL * 3,  
+                     2 => TSTRTL * 120 / 100,  
                      3 => TSTRTH,  
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<6> Start bit DHT too long              "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<5> Start bit DHT too long              "),
     6       => (            -- Start bit "1" DHT too short
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
-                     3 => TSTRTH / MULT * 2,  
+                     3 => TSTRTH * 120 / 100,  
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<7> Start bit DHT High too short        "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<6> Start bit DHT High too short        "),
     7       => (            -- Start bit "1" DHT too long
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -190,8 +198,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<8> Start bit DHT High too long         "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<7> Start bit DHT High too long         "),
     8       => (            -- TXLow phase too short
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -201,8 +210,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<9> TX Bit low too short                "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<8> TX Bit low too short                "),
     9       => (            -- TXLow phase too long
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -212,8 +222,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<10> TX Bit low too long                "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<9> TX Bit low too long                 "),
     10      => (            -- TXHigh phase too short (less than '0' bit length)
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
@@ -223,8 +234,9 @@ constant test_data : t_test_ary := (
                      5 => TBITH0 / MULT * 2,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<11> TX Bit High too short for '0'      "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<10> TX Bit High too short for '0'      "),
       --           "0123456789012345678901234567890123456789"
     11      => (            -- TXHigh phase too long for '0'
       timings   => ( 0 => TSTRTIN,
@@ -232,11 +244,12 @@ constant test_data : t_test_ary := (
                      2 => TSTRTL,  
                      3 => TSTRTH,  
                      4 => TBITL,  
-                     5 => TBITH0 * 3,  
+                     5 => (TBITH0 / MULT / 5) * 11 * 5,  
                      6 => TBITH1),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<12> TX Bit High too long for '0'       "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<11> TX Bit High too long for '0'       "),
       --           "0123456789012345678901234567890123456789"
     12      => (            -- TXHigh phase too short for '1'
       timings   => ( 0 => TSTRTIN,
@@ -245,10 +258,11 @@ constant test_data : t_test_ary := (
                      3 => TSTRTH,
                      4 => TBITL,  
                      5 => TBITH0,  
-                     6 => TBITH1 / MULT * 2),
+                     6 => TBITH1 / MULT * 3),
       data      => x"5577AA33",
-      expectRes => false,
-      desc      => "<13> TX Bit High too short for '1'      "),
+      expectRes => true,
+      expectSC => false,
+      desc      => "<12> TX Bit High too short for '1'      "),
       --           "0123456789012345678901234567890123456789"
     13      => (            -- TXHigh phase too long for '1'
       timings   => ( 0 => TSTRTIN,
@@ -257,10 +271,71 @@ constant test_data : t_test_ary := (
                      3 => TSTRTH,  
                      4 => TBITL,  
                      5 => TBITH0,  
-                     6 => TBITH1 * 3),
+                     6 => TBITH1 / MULT * 6),
+      data      => x"5577AA33",
+      expectRes => true,
+      expectSC => false,
+      desc      => "<13> TX Bit High too long for '1'       "),
+    14      => (            -- repeat good timing to check if status is reset correctly
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
       data      => x"5577AA33",
       expectRes => false,
-      desc      => "<14> TX Bit High too long for '1'       ")
+      expectSC => false,
+      desc      => "<14> Good timings A (repeat)            "),
+    15      => (            -- excessive start bit low --> counter overflow
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => 1200ns,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => true,
+      expectSC => true,
+      desc      => "<15> Execess start bit L                "),
+    16      => (            -- excessive start bit high --> counter overflow
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => 1200ns,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => true,
+      expectSC => false,
+      desc      => "<16> Execess start bit H                "),
+    17      => (            -- excessive Tx bit high --> counter overflow
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => 1200ns,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => true,
+      expectSC => true,
+      desc      => "<17> Execess Tx bit L                   "),
+    18      => (            -- excessive Tx bit low --> counter overflow
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => 1200ns,  
+                     6 => TBITH1),
+      data      => x"5577AA33",
+      expectRes => true,
+      expectSC => false,
+      desc      => "<18> Execess Tx bit H                   ")
       --           "0123456789012345678901234567890123456789"
       ); 
 
@@ -269,7 +344,7 @@ signal testStateReg:    t_testState;
 signal testStateNxt:    t_testState;
 signal startTest:       std_logic;
 signal testDone:        std_logic;
-signal testCnt:         unsigned(3 downto 0);       -- holds the current test index
+signal testCnt:         unsigned(4 downto 0);       -- holds the current test index
 
 ----------------------------------------------------------------
 -- DHT11 states 
@@ -379,9 +454,11 @@ begin
         variable actIdx:    integer := 0;
         variable dataVal:   std_logic_vector(31 downto 0);
         variable er:        boolean;
+        variable sc:        boolean;
         variable desc:      string(1 to 40);
         variable res:       integer;
         variable stat:      boolean;
+        variable statsc:    boolean;
         
         function calc_crc ( data : in std_logic_vector) return std_logic_vector is
             variable crc: std_logic_vector(7 downto 0);
@@ -389,7 +466,7 @@ begin
 		    crc := data(31 downto 24) + data(23 downto 16) + data(15 downto 8) + data(7 downto 0);
 		    return crc;
 		end;
-        procedure getActData(idx: in natural; dx: out std_logic_vector; expectResult: out boolean; desc: out string) is
+        procedure getActData(idx: in natural; dx: out std_logic_vector; expectResult: out boolean; expectSC: out boolean; desc: out string) is
         begin
             dx := test_data(idx).data;
             t_trigin <= test_data(idx).timings(0);
@@ -400,6 +477,7 @@ begin
             t_bitH0 <= test_data(idx).timings(5);
             t_bitH1 <= test_data(idx).timings(6);
             expectResult := test_data(idx).expectRes;
+            expectSC := test_data(idx).expectSC;
             desc := test_data(idx).desc;
         end;
     begin
@@ -413,8 +491,8 @@ begin
                     testStateNxt <= stTestSetUp;
                 end if;
             when stTestSetUp =>
-                testCnt <= TO_UNSIGNED(actIdx, 4);
-                getActData(actIdx, dataVal, er, desc);
+                testCnt <= TO_UNSIGNED(actIdx, 5);
+                getActData(actIdx, dataVal, er, sc, desc);
                 txData <= dataVal & calc_crc(dataVal);
                 wrOut("---------------------------------------------");
                 wrOut("Start Test: " & desc);
@@ -430,14 +508,19 @@ begin
                 if rdy = '1' then
                     res := conv_integer(outH & outT);
                     stat := (outStatus(0) = '1');
-                    assert er xor stat
-                        report "Expected status unequal er=" & boolean'image(er) & " => status=" & boolean'image(stat) severity error;
+                    statsc := (outStatus(1) = '1');
+                    assert not (er xor stat)
+                        report "Expected status unequal expect=" & boolean'image(er) & " => measured=" & boolean'image(stat) severity error;
+                        
+                    assert not (sc xor statsc)
+                        report "Expected short circuit status unequal: expect=" & boolean'image(sc) & " => measured=" & boolean'image(statsc) severity error;
+                        
                     if not stat then
                         assert res = conv_integer(dataVal)
                             report "Expected data values unequal data=" & integer'image(conv_integer(dataVal)) & " => outH/T: " & integer'image(res) severity error;
                     end if;
-                    testStateNxt <= stTestSetUp;
 
+                    testStateNxt <= stTestSetUp;
                     actIdx := actIdx + 1;
                     if actIdx = test_data'length then
                         testStateNxt <= stTestEnd;

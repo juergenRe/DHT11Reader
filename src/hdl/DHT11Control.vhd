@@ -41,7 +41,7 @@ entity DHT11Control is
         reset:          in std_logic;
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [0]: error [1]: unused
+        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [0]: error, [1]: short circuit to '0' detected 
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -72,17 +72,18 @@ constant CNT_DLY_BITL_MX:   integer := 8;                       -- start bit DHT
 constant CNT_DLY_TXL_MN:    integer := 2;                       -- Tx start DHT >40us < 60us
 constant CNT_DLY_TXL_MX:    integer := 4;                       -- Tx start DHT >40us < 60us
 constant CNT_DLY_TXH0_MN:   integer := 1;                       -- '0'-Bit min 20us high
-constant CNT_DLY_TXHU_MN:   integer := 3;                       -- '0'-Bit max 40us high, after this: undefined status
+constant CNT_DLY_TXH0_MX:   integer := 3;                       -- '0'-Bit max 40us high, after this: undefined status
 constant CNT_DLY_TXH1_MN:   integer := 5;                       -- '1'-Bit min 60us high
 constant CNT_DLY_TXH1_MX:   integer := 7;                       -- '1'-Bit max 80us high --> after this: error
 constant CNT_DLY_TIMEOUT:   integer := 20;                      -- general timeout --> we assume that transfer was aborted
+constant CNT_TIMEOUT_BIT:   integer := 4;                       -- general timeout bit --> we assume that transfer was aborted
 
 type tSmplStates is (stPowOn, stPowOnDly, stIdle,
                     stTrgSampling, stWaitStartBitHigh,
                     stWaitDHTStartBitLow, stWaitDHTStartBitHigh,
                     stWaitTxHigh, stWaitTxLow, stShiftLow, stShiftHigh,
                     stChkSum, stStoreResult, stDly,
-                    stErrWaitEnd, stError);
+                    stErrWaitEnd, stErrWaitOnLow, stError);
 signal stSmplReg:       tSmplStates;
 signal stSmplNxt:       tSmplStates;
 signal smplCntReg:      std_logic_vector(CNT_BITS-1 downto 0);
@@ -223,10 +224,14 @@ begin
         when stChkNewData =>
             if tickPreCnt = '1' and (stSmplReg = stStoreResult) then
                 dataSampleNxt <= actData;
-                dataStatusNxt <= "10"; 
+                dataStatusNxt <= "00"; 
+            elsif tickPreCnt = '1' and (stSmplReg = stTrgSampling) then
+                dataStatusNxt(1) <= '0'; 
+            elsif tickPreCnt = '1' and (stSmplReg = stErrWaitOnLow) then
+                dataStatusNxt(1) <= '1'; 
             elsif tickPreCnt = '1' and (stSmplReg = stError) then
                 dataSampleNxt <= (others => '0');
-                dataStatusNxt <= "11"; 
+                dataStatusNxt(0) <= '1'; 
             end if;
      end case;
 end process out_smpl_nxt;
@@ -288,7 +293,7 @@ begin
             elsif smplCntReg > CNT_DLY_WAIT then
                 stSmplNxt <= stErrWaitEnd;
             end if;
-        when stWaitDHTStartBitLow =>
+        when stWaitDHTStartBitLow =>        -- wait for the time start bit is driven low by DHT11
             smplCntNxt <= smplCntReg + 1;
             if dhtInSig = '1' then
                 smplCntNxt <= (others => '0');
@@ -301,8 +306,12 @@ begin
                 else
                     stSmplNxt <= stErrWaitEnd;
                 end if;
+            else                            -- check overflow on counter. go to unconditional wait during '0' 
+              if smplCntReg(CNT_TIMEOUT_BIT) = '1' then
+                stSmplNxt <= stErrWaitOnLow;
+              end if;
             end if;   
-        when stWaitDHTStartBitHigh =>
+        when stWaitDHTStartBitHigh =>       -- wait for the time start bit is driven high by DHT11
             smplCntNxt <= smplCntReg + 1;
             if dhtInSig = '0' then
                 bitCntNxt <= (others => '0');
@@ -314,6 +323,11 @@ begin
                         stSmplNxt <= stErrWaitEnd;
                     end if;
                 else
+                    stSmplNxt <= stErrWaitEnd;
+                end if;
+            else                            -- check overflow on counter. go to unconditional wait during '0' 
+                if smplCntReg(CNT_TIMEOUT_BIT) = '1' then
+                    smplCntNxt <= (others => '0');
                     stSmplNxt <= stErrWaitEnd;
                 end if;
             end if;   
@@ -333,14 +347,20 @@ begin
                             stSmplNxt <= stErrWaitEnd;
                         end if;
                     end if;
+                else
+                    stSmplNxt <= stErrWaitEnd;  -- low phase too short
                 end if;
+            else                            -- check overflow on counter. go to unconditional wait during '0' 
+              if smplCntReg(CNT_TIMEOUT_BIT) = '1' then
+                stSmplNxt <= stErrWaitOnLow;
+              end if;
             end if;   
         when stWaitTxLow =>         -- wait for falling edge of input signal to check high phase and determine bit value
             smplCntNxt <= smplCntReg + 1;
             if dhtInSig = '0' then
                 smplCntNxt <= (others => '0');
                 if smplCntReg >= CNT_DLY_TXH0_MN then
-                    if smplCntReg < CNT_DLY_TXHU_MN then
+                    if smplCntReg < CNT_DLY_TXH0_MX then
                         -- found BITx = 0
                         stSmplNxt <= stShiftLow;
                     elsif smplCntReg < CNT_DLY_TXH1_MN then 
@@ -351,11 +371,14 @@ begin
                     else
                         stSmplNxt <= stErrWaitEnd;
                     end if;
+                else
+                    stSmplNxt <= stErrWaitEnd;  -- high phase too short
                 end if;
-            else
-                if smplCntReg > CNT_DLY_TIMEOUT then
-                    stSmplNxt <= stError;
-                end if; 
+            else                            -- check overflow on counter. go to unconditional wait during '0' 
+                if smplCntReg(CNT_TIMEOUT_BIT) = '1' then
+                    stSmplNxt <= stErrWaitEnd;
+                    smplCntNxt <= (others => '0');
+                end if;
             end if;
         when stShiftLow =>
             stSmplNxt <= stWaitTxHigh;
@@ -371,6 +394,11 @@ begin
             end if;
         when stStoreResult =>
             stSmplNxt <= stIdle;
+        when stErrWaitOnLow =>
+            if dhtInSig = '1' then
+                smplCntNxt <= (others => '0');
+                stSmplNxt <= stErrWaitEnd;
+            end if;
         when stErrWaitEnd =>
             -- wait CNT_DLY_TIMEOUT times that input remains high
             smplCntNxt <= smplCntReg + 1;
@@ -378,7 +406,7 @@ begin
                 -- reset counter 
                 smplCntNxt <= (others => '0');
             end if;
-            if smplCntReg > CNT_DLY_TIMEOUT then
+            if smplCntReg(CNT_TIMEOUT_BIT) = '1' then
                 stSmplNxt <= stError;
             end if;
         when stError =>
