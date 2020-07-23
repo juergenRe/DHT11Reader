@@ -34,7 +34,8 @@ use IEEE.std_logic_unsigned.all;
 
 entity DHT11Control is
     generic (
-        NDIV:   integer := 500            -- 1250 for 125MhZ clock; shall divide to 5us base clock
+        NDIV:   integer := 99;            -- 1us ticks @ 100MHz clock
+        SIMU:   boolean := false          -- enable simulation timings or real timings
     );
     port (
         clk:            in std_logic;
@@ -50,6 +51,17 @@ entity DHT11Control is
 end DHT11Control;
 
 architecture Behavioral of DHT11Control is
+
+-- ternary if function for integer return valus
+function tif(cond : boolean; res_true, res_false : integer) return integer is
+begin
+  if cond then
+    return res_true;
+  else
+    return res_false;
+  end if;
+end function;
+
 constant NDIVL:         integer := 12;                          -- 12 bits for prescaler assuming NDIV < 4098
 
 -- Prescaler variables
@@ -62,21 +74,24 @@ signal preCntNxt:   std_logic_vector(NDIVL-1 downto 0);
 signal tickPreCnt:  std_logic;
 
 -- Sampling state machine
-constant CNT_BITS:          integer := 5;                      -- 17 bits counter for init delay --> 1.3s
-constant CNT_START_BIT:     integer := 3;                      -- start bit length ca. 20ms --> go when bit 12 is set
---constant CNT_BITS:          integer := 18;                      -- 17 bits counter for init delay --> 1.3s
---constant CNT_START_BIT:     integer := 12;                      -- start bit length ca. 20ms --> go when bit 12 is set
-constant CNT_DLY_WAIT:      integer := 8;                       -- DHT has to respond after 40us, otherwise error
-constant CNT_DLY_BITL_MN:   integer := 5;                       -- start bit DHT > 60us < 100us
-constant CNT_DLY_BITL_MX:   integer := 8;                       -- start bit DHT > 60us < 100us
-constant CNT_DLY_TXL_MN:    integer := 2;                       -- Tx start DHT >40us < 60us
-constant CNT_DLY_TXL_MX:    integer := 4;                       -- Tx start DHT >40us < 60us
-constant CNT_DLY_TXH0_MN:   integer := 1;                       -- '0'-Bit min 20us high
-constant CNT_DLY_TXH0_MX:   integer := 3;                       -- '0'-Bit max 40us high, after this: undefined status
-constant CNT_DLY_TXH1_MN:   integer := 5;                       -- '1'-Bit min 60us high
-constant CNT_DLY_TXH1_MX:   integer := 7;                       -- '1'-Bit max 80us high --> after this: error
-constant CNT_DLY_TIMEOUT:   integer := 20;                      -- general timeout --> we assume that transfer was aborted
-constant CNT_TIMEOUT_BIT:   integer := 4;                       -- general timeout bit --> we assume that transfer was aborted
+--constant CNT_BITS:          integer := 5;                      -- 17 bits counter for init delay --> 1.3s
+--constant CNT_START_BIT:     integer := 3;                      -- start bit length ca. 20ms --> go when bit 12 is set
+--constant CNT_TIMEOUT_BIT:   integer := 4;                       -- general timeout bit --> we assume that transfer was aborted
+constant CNT_BITS:          integer := 21;                      -- 21 bits counter for init delay --> ca. 2s max delay
+constant CNT_START_BIT:     integer := 12;                      -- start bit length ca. 20ms --> go when bit 12 is set
+constant CNT_TIMEOUT_BIT:   integer := 14;                      -- general timeout bit --> we assume that transfer was aborted
+
+constant CNT_DLY_START_BIT: integer := 20480;                     -- start bit length > 18ms
+constant CNT_DLY_WAIT:      integer := 40-1;                      -- DHT has to respond after 40us, otherwise error
+constant CNT_DLY_BITL_MN:   integer := 60-1;                      -- start bit DHT > 60us < 100us
+constant CNT_DLY_BITL_MX:   integer := 100-1;                     -- start bit DHT > 60us < 100us
+constant CNT_DLY_TXL_MN:    integer := 40-1;                      -- Tx start DHT >40us < 60us
+constant CNT_DLY_TXL_MX:    integer := 60-1;                      -- Tx start DHT >40us < 60us
+constant CNT_DLY_TXH0_MN:   integer := 10-1;                      -- '0'-Bit min 20us high
+constant CNT_DLY_TXH0_MX:   integer := 40-1;                      -- '0'-Bit max 40us high, after this: undefined status
+constant CNT_DLY_TXH1_MN:   integer := 60-1;                      -- '1'-Bit min 60us high
+constant CNT_DLY_TXH1_MX:   integer := 80-1;                      -- '1'-Bit max 80us high --> after this: error
+constant CNT_DLY_POWON:     integer := tif(SIMU, 14, 20);         -- power on timeout
 
 type tSmplStates is (stPowOn, stPowOnDly, stIdle,
                     stTrgSampling, stWaitStartBitHigh,
@@ -88,7 +103,7 @@ signal stSmplReg:       tSmplStates;
 signal stSmplNxt:       tSmplStates;
 signal smplCntReg:      std_logic_vector(CNT_BITS-1 downto 0);
 signal smplCntNxt:      std_logic_vector(CNT_BITS-1 downto 0);
-signal cntMax:          std_logic_vector(CNT_BITS-1 downto 0);
+--signal cntMaxInit:      std_logic_vector(CNT_BITS-1 downto 0);
 
 -- Data In register and bit counter
 constant DHTDATA_X_BOT: integer := 0;
@@ -140,7 +155,7 @@ end component;
 
 begin
 
-cntMax <= (others => '1');             -- set a max value to compare with
+--cntMaxInit <= '0' & x"124FF";             -- set a max value to compare for init
 
     -- prescaler to reduce input clock
 clk_div_reg: process (clk, reset)
@@ -271,7 +286,7 @@ begin
             bitCntNxt <= (others => '0');
         when stPowOnDly =>
             smplCntNxt <= smplCntReg + 1;
-            if smplCntReg = cntMax then
+            if smplCntReg(CNT_DLY_POWON) = '1' then
                 stSmplNxt <= stIdle;
             end if;
         when stIdle =>
@@ -281,7 +296,8 @@ begin
             end if;
         when stTrgSampling =>           -- drive output to DHT low for > 18ms
             smplCntNxt <= smplCntReg + 1;
-            if smplCntReg(CNT_START_BIT) = '1' then
+--            if smplCntReg(CNT_START_BIT) = '1' then
+            if smplCntReg = CNT_DLY_START_BIT then
                 stSmplNxt <= stWaitStartBitHigh;
                 smplCntNxt <= (others => '0');
             end if;
@@ -400,7 +416,7 @@ begin
                 stSmplNxt <= stErrWaitEnd;
             end if;
         when stErrWaitEnd =>
-            -- wait CNT_DLY_TIMEOUT times that input remains high
+            -- wait CNT_TIMEOUT_BIT times that input remains high
             smplCntNxt <= smplCntReg + 1;
             if dhtInSig = '0' then
                 -- reset counter 

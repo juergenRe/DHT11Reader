@@ -45,7 +45,7 @@ signal clk:             std_logic := '0';
 signal reset:           std_logic := '0';
 
 -- inputs to DHT11Reader block
-constant NDIV:          integer := 4;
+constant NDIV:          integer := 99;
 
 signal outT:           std_logic_vector(15 downto 0);      -- temperature
 signal outH:           std_logic_vector(15 downto 0);      -- humidity
@@ -61,22 +61,30 @@ signal dhtInSig:       std_logic := '1';                   -- input line towards
 --
 constant NDATABIT:      integer := 40;
 
--- timing contants: base timing in ns, can be streteched by MULT
+-- timing constants: base timing, can be streteched by MULT
+-- times are nominal times
 constant MULT:          integer := 5;
-constant TSTRTIN:       time := 250ns;
-constant TWAKE:         time := 20ns * MULT;       -- min timing, max is double
-constant TSTRTL:        time := 80ns * MULT;
-constant TSTRTH:        time := 80ns * MULT;
-constant TBITL:         time := 50ns * MULT;
-constant TBITH0:        time := 26ns * MULT;
-constant TBITH1:        time := 70ns * MULT;
+constant TSTRTIN:       time := 10us;               -- min time to detect a trigger
+constant TWAKE:         time := 30us;               -- wake up 20..40us
+constant TSTRTL:        time := 80us;               -- duration of start bit low of DHT
+constant TSTRTH:        time := 80us;               -- duration of start bit high
+constant TBITL:         time := 50us;               -- duration of bit low time
+constant TBITH0:        time := 27us;               -- duration of bit high when transmitting '0'
+constant TBITH1:        time := 70us;               -- duration of bit high when transmitting '1'
+constant TEXCESSTIME:   time := 17ms;               -- excessive hold of one state
 
-constant TVAR_WAKE:     integer := 30;          -- 10% variation for wake-up time
-constant TVAR_STRT:     integer := 25;          -- 25% variation for start bit
-constant TVAR_BITL:     integer := 20;          -- 20% variation for Bit low time
-constant TVAR_BITH0:    integer := 8;           -- 8% variation for a '0' bit
-constant TVAR_BITH1:    integer := 15;          -- 15% variation for '1' bit
-constant TVAT_END:      integer := 50;
+constant TVAR_WAKE_MN:  time := 10us;               -- variation to get minimum time 
+constant TVAR_WAKE_MX:  time := 10us;               -- variation to get maximum time 
+constant TVAR_STRT_MN:  time := 20us;               -- variation to get minimum time 
+constant TVAR_STRT_MX:  time := 20us;               -- variation to get maximum time 
+constant TVAR_BITL_MN:  time := 10us;               -- variation to get minimum time 
+constant TVAR_BITL_MX:  time := 10us;               -- variation to get maximum time 
+constant TVAR_BITH0_MN: time :=  7us;               -- variation to get minimum time 
+constant TVAR_BITH0_MX: time := 13us;               -- variation to get maximum time 
+constant TVAR_BITH1_MN: time := 10us;               -- variation to get minimum time 
+constant TVAR_BITH1_MX: time := 10us;               -- variation to get maximum time 
+
+constant TD_ERROR:      time :=  1us;               -- additaional time increment to get out of good window
 
 signal t_trigin:        time;                   -- min external start bit
 signal t_wakeup:        time;
@@ -143,7 +151,7 @@ constant test_data : t_test_ary := (
       desc      => "<2> Good timings C                      "),
     3       => (            -- wake up too long
       timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE *5,
+                     1 => TWAKE + TVAR_WAKE_MX + TD_ERROR,
                      2 => TSTRTL,  
                      3 => TSTRTH,  
                      4 => TBITL,  
@@ -156,7 +164,7 @@ constant test_data : t_test_ary := (
     4       => (            -- Start bit "0" DHT too short
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
-                     2 => TSTRTL / MULT * 2,  
+                     2 => TSTRTL - TVAR_STRT_MN - TD_ERROR,  
                      3 => TSTRTH,  
                      4 => TBITL,  
                      5 => TBITH0,  
@@ -168,7 +176,7 @@ constant test_data : t_test_ary := (
     5       => (            -- Start bit "0" DHT too long
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
-                     2 => TSTRTL * 120 / 100,  
+                     2 => TSTRTL + TVAR_STRT_MX + TD_ERROR,  
                      3 => TSTRTH,  
                      4 => TBITL,  
                      5 => TBITH0,  
@@ -181,7 +189,7 @@ constant test_data : t_test_ary := (
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
-                     3 => TSTRTH * 120 / 100,  
+                     3 => TSTRTH - TVAR_STRT_MN - TD_ERROR,  
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
@@ -193,7 +201,7 @@ constant test_data : t_test_ary := (
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
-                     3 => TSTRTH * 3,  
+                     3 => TSTRTH + TVAR_STRT_MX + TD_ERROR,  
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
@@ -206,7 +214,7 @@ constant test_data : t_test_ary := (
                      1 => TWAKE,
                      2 => TSTRTL,  
                      3 => TSTRTH,
-                     4 => TBITL / MULT * 2,  
+                     4 => TBITL - TVAR_BITL_MN - TD_ERROR,  
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
@@ -218,7 +226,7 @@ constant test_data : t_test_ary := (
                      1 => TWAKE,
                      2 => TSTRTL,  
                      3 => TSTRTH,  
-                     4 => TBITL * 3,  
+                     4 => TBITL + TVAR_BITL_MX + TD_ERROR,  
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
@@ -231,7 +239,7 @@ constant test_data : t_test_ary := (
                      2 => TSTRTL,  
                      3 => TSTRTH,
                      4 => TBITL,  
-                     5 => TBITH0 / MULT * 2,  
+                     5 => TBITH0 - TVAR_BITH0_MN - TD_ERROR,  
                      6 => TBITH1),
       data      => x"5577AA33",
       expectRes => true,
@@ -244,7 +252,7 @@ constant test_data : t_test_ary := (
                      2 => TSTRTL,  
                      3 => TSTRTH,  
                      4 => TBITL,  
-                     5 => (TBITH0 / MULT / 5) * 11 * 5,  
+                     5 => TBITH0 + TVAR_BITH0_MX + TD_ERROR,  
                      6 => TBITH1),
       data      => x"5577AA33",
       expectRes => true,
@@ -258,7 +266,7 @@ constant test_data : t_test_ary := (
                      3 => TSTRTH,
                      4 => TBITL,  
                      5 => TBITH0,  
-                     6 => TBITH1 / MULT * 3),
+                     6 => TBITH1 - TVAR_BITH1_MN - TD_ERROR),
       data      => x"5577AA33",
       expectRes => true,
       expectSC => false,
@@ -271,7 +279,7 @@ constant test_data : t_test_ary := (
                      3 => TSTRTH,  
                      4 => TBITL,  
                      5 => TBITH0,  
-                     6 => TBITH1 / MULT * 6),
+                     6 => TBITH1 + TVAR_BITH1_MX + TD_ERROR),
       data      => x"5577AA33",
       expectRes => true,
       expectSC => false,
@@ -291,7 +299,7 @@ constant test_data : t_test_ary := (
     15      => (            -- excessive start bit low --> counter overflow
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
-                     2 => 1200ns,  
+                     2 => TEXCESSTIME,  
                      3 => TSTRTH,  
                      4 => TBITL,  
                      5 => TBITH0,  
@@ -299,43 +307,43 @@ constant test_data : t_test_ary := (
       data      => x"5577AA33",
       expectRes => true,
       expectSC => true,
-      desc      => "<15> Execess start bit L                "),
+      desc      => "<15> Excess start bit L                 "),
     16      => (            -- excessive start bit high --> counter overflow
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
-                     3 => 1200ns,  
+                     3 => TEXCESSTIME,  
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
       expectRes => true,
       expectSC => false,
-      desc      => "<16> Execess start bit H                "),
+      desc      => "<16> Excess start bit H                 "),
     17      => (            -- excessive Tx bit high --> counter overflow
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
                      3 => TSTRTH,  
-                     4 => 1200ns,  
+                     4 => TEXCESSTIME,  
                      5 => TBITH0,  
                      6 => TBITH1),
       data      => x"5577AA33",
       expectRes => true,
       expectSC => true,
-      desc      => "<17> Execess Tx bit L                   "),
+      desc      => "<17> Excess Tx bit L                    "),
     18      => (            -- excessive Tx bit low --> counter overflow
       timings   => ( 0 => TSTRTIN,
                      1 => TWAKE,
                      2 => TSTRTL,  
                      3 => TSTRTH,  
                      4 => TBITL,  
-                     5 => 1200ns,  
+                     5 => TEXCESSTIME,  
                      6 => TBITH1),
       data      => x"5577AA33",
       expectRes => true,
       expectSC => false,
-      desc      => "<18> Execess Tx bit H                   ")
+      desc      => "<18> Excess Tx bit H                    ")
       --           "0123456789012345678901234567890123456789"
       ); 
 
@@ -361,7 +369,8 @@ signal expectResult:boolean;
 ----------------------------------------
 component DHT11Control
     generic (
-        NDIV:   integer := 500            -- 1250 for 125MhZ clock; shall divide to 10us base clock
+        NDIV:   integer := 99;            -- 1us ticks @ 100MHz clock
+        SIMU:   boolean := false          -- enable simulation timings or real timings
     );
     port (
         clk:            in std_logic;
@@ -384,7 +393,8 @@ end procedure wrOut;
 begin
     uut: DHT11Control
         generic map(
-            NDIV => NDIV  
+            NDIV => NDIV,  
+            SIMU => true
         )
         port map (
             clk         => clk,     
