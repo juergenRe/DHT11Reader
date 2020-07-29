@@ -34,12 +34,13 @@ use IEEE.std_logic_unsigned.all;
 
 entity DHT11Control is
     generic (
-        NDIV:   integer := 99;            -- 1us ticks @ 100MHz clock
-        SIMU:   boolean := false          -- enable simulation timings or real timings
+        NDIV:           integer := 99;                          -- 1us ticks @ 100MHz clock
+        POWONDLY:       boolean := false                        -- enable simulation timings or real timings
     );
     port (
         clk:            in std_logic;
         reset:          in std_logic;
+        cntTick:        out std_logic;                          -- counter tick
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
         outStatus:      out std_logic_vector(1 downto 0);       -- status out: [0]: error, [1]: short circuit to '0' detected 
@@ -77,7 +78,6 @@ signal tickPreCnt:  std_logic;
 --constant CNT_BITS:          integer := 5;                      -- 17 bits counter for init delay --> 1.3s
 --constant CNT_START_BIT:     integer := 3;                      -- start bit length ca. 20ms --> go when bit 12 is set
 --constant CNT_TIMEOUT_BIT:   integer := 4;                       -- general timeout bit --> we assume that transfer was aborted
-constant CNT_BITS:          integer := 21;                      -- 21 bits counter for init delay --> ca. 2s max delay
 constant CNT_START_BIT:     integer := 12;                      -- start bit length ca. 20ms --> go when bit 12 is set
 constant CNT_TIMEOUT_BIT:   integer := 14;                      -- general timeout bit --> we assume that transfer was aborted
 
@@ -91,7 +91,8 @@ constant CNT_DLY_TXH0_MN:   integer := 10-1;                      -- '0'-Bit min
 constant CNT_DLY_TXH0_MX:   integer := 40-1;                      -- '0'-Bit max 40us high, after this: undefined status
 constant CNT_DLY_TXH1_MN:   integer := 60-1;                      -- '1'-Bit min 60us high
 constant CNT_DLY_TXH1_MX:   integer := 80-1;                      -- '1'-Bit max 80us high --> after this: error
-constant CNT_DLY_POWON:     integer := tif(SIMU, 14, 20);         -- power on timeout
+constant CNT_DLY_POWON:     integer := tif(POWONDLY, 20, CNT_TIMEOUT_BIT);         -- power on timeout
+constant CNT_BITS:          integer := CNT_DLY_POWON + 1;         -- 21 bits counter for init delay --> ca. 2s max delay
 
 type tSmplStates is (stPowOn, stPowOnDly, stIdle,
                     stTrgSampling, stWaitStartBitHigh,
