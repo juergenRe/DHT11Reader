@@ -47,7 +47,7 @@ entity DHT11Control is
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
-        dhtOutSig:      out std_logic                           -- output line to DHT11
+        dhtOutSig:      out std_logic                           -- output line to DHT11: '0': drives actively low
      );
 end DHT11Control;
 
@@ -135,6 +135,20 @@ signal dataSampleNxt:   std_logic_vector(DHTDATALEN-1 downto 0);    -- final sam
 signal dataStatusReg:   std_logic_vector(1 downto 0);               -- status information
 signal dataStatusNxt:   std_logic_vector(1 downto 0);               -- status information
 
+-- debug attributes
+attribute mark_debug : string;
+attribute mark_debug of smplCntReg: signal is "true";
+attribute mark_debug of stDataSmplReg: signal is "true";
+attribute mark_debug of stSmplReg: signal is "true";
+attribute mark_debug of dataSampleReg: signal is "true";
+attribute mark_debug of dataStatusReg: signal is "true";
+attribute mark_debug of actBit: signal is "true";
+attribute mark_debug of shiftEnable: signal is "true";
+attribute mark_debug of sr_reset: signal is "true";
+attribute mark_debug of tickPreCnt: signal is "true";
+attribute mark_debug of actData: signal is "true";
+attribute mark_debug of bitCntReg: signal is "true";
+
 -- shift register for input data
 component ShiftLeft is
 generic (
@@ -190,6 +204,7 @@ begin
 end process clk_div_nxt;
 
 tickPreCnt <= '1' when (preCntReg = 0) else '0';
+cntTick <= tickPreCnt;
 dhtOutSig <= '0' when (stSmplReg = stTrgSampling) else '1';
 rdy <= '1' when (stSmplReg = stIdle) else '0';
 actBit <= '1' when (stSmplReg = stShiftHigh) else '0';
@@ -227,7 +242,7 @@ begin
     end if;
 end process out_smpl_reg;
 
-out_smpl_nxt: process(tickPreCnt, stDataSmplReg, stSmplReg)
+out_smpl_nxt: process(tickPreCnt, stDataSmplReg, stSmplReg, dataSampleReg, dataStatusReg, actData)
 begin
     stDataSmplNxt <= stDataSmplReg;
     dataSampleNxt <= dataSampleReg;
@@ -277,9 +292,11 @@ begin
     end if;
 end process smpl_state_proc_reg;
 
-smpl_state_proc_nxt: process(stSmplReg, smplCntReg, dhtInSig, trg)
+smpl_state_proc_nxt: process(stSmplReg, smplCntReg, bitCntReg, dhtInSig, trg, chkSum, actData)
 begin
     stSmplNxt <= stSmplReg;
+    bitCntNxt <= bitCntReg;
+    smplCntNxt <= smplCntReg;
     case stSmplReg is
         when stPowOn =>
             stSmplNxt <= stPowOnDly;
