@@ -137,18 +137,18 @@ signal dataStatusReg:   std_logic_vector(1 downto 0);               -- status in
 signal dataStatusNxt:   std_logic_vector(1 downto 0);               -- status information
 
 -- debug attributes
-attribute mark_debug : string;
-attribute mark_debug of smplCntReg: signal is "true";
-attribute mark_debug of stDataSmplReg: signal is "true";
-attribute mark_debug of stSmplReg: signal is "true";
-attribute mark_debug of dataSampleReg: signal is "true";
-attribute mark_debug of dataStatusReg: signal is "true";
-attribute mark_debug of actBit: signal is "true";
-attribute mark_debug of shiftEnable: signal is "true";
-attribute mark_debug of sr_reset: signal is "true";
-attribute mark_debug of tickPreCnt: signal is "true";
-attribute mark_debug of actData: signal is "true";
-attribute mark_debug of bitCntReg: signal is "true";
+--attribute mark_debug : string;
+--attribute mark_debug of smplCntReg: signal is "true";
+--attribute mark_debug of stDataSmplReg: signal is "true";
+--attribute mark_debug of stSmplReg: signal is "true";
+--attribute mark_debug of dataSampleReg: signal is "true";
+--attribute mark_debug of dataStatusReg: signal is "true";
+--attribute mark_debug of actBit: signal is "true";
+--attribute mark_debug of shiftEnable: signal is "true";
+--attribute mark_debug of sr_reset: signal is "true";
+--attribute mark_debug of tickPreCnt: signal is "true";
+--attribute mark_debug of actData: signal is "true";
+--attribute mark_debug of bitCntReg: signal is "true";
 
 -- shift register for input data
 component ShiftLeft is

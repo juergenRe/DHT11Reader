@@ -73,7 +73,7 @@ signal dhtIn:           std_logic;
 signal dhtOut:          std_logic;
 signal dataT:           std_logic_vector(15 downto 0);
 signal dataH:           std_logic_vector(15 downto 0);
-signal dataStatus:      std_logic_vector(1 downto 0);
+signal dataStatus:      std_logic_vector(2 downto 0);
 
 -- debug attributes
 attribute mark_debug : string;
@@ -101,7 +101,7 @@ component DHT11Control
         cntTick:        out std_logic;                          -- counter tick
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [1]: sample available; [0]: error
+        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [1]: sample available; [0]: error
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11

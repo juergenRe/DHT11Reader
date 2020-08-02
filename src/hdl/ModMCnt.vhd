@@ -55,7 +55,7 @@ begin
         end if;
     end process cnt_state_reg;
     
-    cnt_state_nxt: process(stCntReg, clk_en)
+    cnt_state_nxt: process(stCntReg, r_reg, clk_en)
     begin
         stCntNxt <= stCntReg;
         r_next <= r_reg;

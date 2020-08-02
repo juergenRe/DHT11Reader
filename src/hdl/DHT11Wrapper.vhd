@@ -102,7 +102,6 @@ architecture Behavioral of DHT11Wrapper is
     signal actControl:      std_logic_vector(1 downto 0);       -- actual written control setting
     signal actControlNxt:   std_logic_vector(1 downto 0);
     signal firstSampleDone: std_logic;
-    signal firstSampleDoneN:std_logic;
     
     component DHT11Control
         generic (
@@ -147,7 +146,7 @@ architecture Behavioral of DHT11Wrapper is
     end component;
 
 begin
-    dhtdev: DHT11Control
+    dht11Control_inst: DHT11Control
         generic map(
             NDIV        => NDIV,  
             POWONDLY    => false
@@ -170,7 +169,7 @@ begin
     U_VALUES <= outH & outT;
 
     -- 1s delay counter for power on and waiting time after a sample
-    smpl_dly: mod_m_counter
+    dly_inst: mod_m_counter
         generic map (
             N       => SPMPLDLYBITS,
             M       => 2**(SPMPLDLYBITS-1)
@@ -200,7 +199,7 @@ begin
         end if;
     end process p_auto_reg;
     
-    p_auto_nxt: process(cfg_tick, rdy_tick, actControl, firstSampleDone)
+    p_auto_nxt: process(cfg_tick, rdy_tick, actControl)
     begin
         actControlNxt <= actControl;
         -- reset trigger bit when done in one-shot mode, otherwise keep it
@@ -223,10 +222,8 @@ begin
         if rising_edge(clk) then
             if reset ='1' then
                 stSmplStateReg <= stPwrOn;
-                firstSampleDone <= '0';
             else
                 stSmplStateReg <= stSmplStateNxt;
-                firstSampleDone <= firstSampleDoneN;
             end if;
         end if;
     end process p_smplState_reg;
@@ -234,10 +231,8 @@ begin
     p_smplState_nxt: process(stSmplStateReg, smplTrg, cntDone, rdy)
     begin
         stSmplStateNxt <= stSmplStateReg;
-        firstSampleDoneN <= firstSampleDone;
         case stSmplStateReg is
             when stPwrOn =>
-                firstSampleDoneN <= '0';
                 if cntDone = '1' then
                     stSmplStateNxt <= stIdle;
                 end if;
@@ -254,7 +249,6 @@ begin
                     stSmplStateNxt <= stWait;
                 end if;
             when stWait =>
-                firstSampleDoneN <= '1';
                 if cntDone = '1' then
                     stSmplStateNxt <= stIdle;
                 end if;
@@ -263,7 +257,7 @@ begin
     trg <= '1' when stSmplStateReg = stSampleStart else '0';
     rdy_status <= '1' when (stSmplStateReg = stWait) or (stSmplStateReg = stIdle) else '0';
     
-	edge_detect: EdgeDetect
+	rdy_tick_inst: EdgeDetect
         port map (
             clk         => clk,
             reset       => reset,
