@@ -43,7 +43,7 @@ entity DHT11Control is
         cntTick:        out std_logic;                          -- counter tick
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [0]: error, [1]: short circuit to '0' detected 
+        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [0]: error, [1]: short circuit to '0' detected 
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -87,7 +87,7 @@ constant CNT_DLY_BITL_MN:   integer := 60-1;                      -- start bit D
 constant CNT_DLY_BITL_MX:   integer := 100-1;                     -- start bit DHT > 60us < 100us
 constant CNT_DLY_TXL_MN:    integer := 40-1;                      -- Tx start DHT >40us < 60us
 constant CNT_DLY_TXL_MX:    integer := 60-1;                      -- Tx start DHT >40us < 60us
-constant CNT_DLY_TXH0_MN:   integer := 10-1;                      -- '0'-Bit min 20us high
+constant CNT_DLY_TXH0_MN:   integer := 14-1;                      -- '0'-Bit min 20us high
 constant CNT_DLY_TXH0_MX:   integer := 40-1;                      -- '0'-Bit max 40us high, after this: undefined status
 constant CNT_DLY_TXH1_MN:   integer := 60-1;                      -- '1'-Bit min 60us high
 constant CNT_DLY_TXH1_MX:   integer := 80-1;                      -- '1'-Bit max 80us high --> after this: error
@@ -125,6 +125,7 @@ signal bitCntNxt:       std_logic_vector(DHTBITLEN-1 downto 0);
 signal bitCntReg:       std_logic_vector(DHTBITLEN-1 downto 0);
 signal chkSum:          std_logic_vector(DHTDATA_X_TOP-1 downto DHTDATA_X_BOT);
 signal sr_reset:        std_logic;
+signal rdy_int:         std_logic;
 
 -- preparing output data state machine
 type tDataSmpl is (stPowOn, stChkNewData);
@@ -206,7 +207,8 @@ end process clk_div_nxt;
 tickPreCnt <= '1' when (preCntReg = 0) else '0';
 cntTick <= tickPreCnt;
 dhtOutSig <= '0' when (stSmplReg = stTrgSampling) else '1';
-rdy <= '1' when (stSmplReg = stIdle) else '0';
+rdy_int <= '1' when (stSmplReg = stIdle) else '0';
+rdy <= rdy_int;
 actBit <= '1' when (stSmplReg = stShiftHigh) else '0';
 shiftEnable <= '1' when (((stSmplReg = stShiftHigh) or (stSmplReg = stShiftLow)) and (tickPreCnt = '1')) else '0';
 chkSum <= actData(15 downto 8) + actData(23 downto 16) + actData(31 downto 24) + actData(39 downto 32);
@@ -255,10 +257,14 @@ begin
         when stChkNewData =>
             if tickPreCnt = '1' and (stSmplReg = stStoreResult) then
                 dataSampleNxt <= actData;
-                dataStatusNxt <= "00"; 
+                dataStatusNxt <= "01"; 
             elsif tickPreCnt = '1' and (stSmplReg = stTrgSampling) then
-                dataStatusNxt(1) <= '0'; 
-            elsif tickPreCnt = '1' and (stSmplReg = stErrWaitOnLow) then
+                -- reset error and indicate no valid data
+                -- otherwise the previous value is still valid and can be used.
+                if dataStatusReg(1) = '1' then
+                    dataStatusNxt <= (others => '0');
+                end if;
+            elsif tickPreCnt = '1' and (stSmplReg = stErrWaitEnd) then
                 dataStatusNxt(1) <= '1'; 
             elsif tickPreCnt = '1' and (stSmplReg = stError) then
                 dataSampleNxt <= (others => '0');
@@ -269,7 +275,8 @@ end process out_smpl_nxt;
 
 outH <= dataSampleReg(DHTDATA_H_TOP-1 downto DHTDATA_H_BOT);
 outT <= dataSampleReg(DHTDATA_T_TOP-1 downto DHTDATA_T_BOT);
-outStatus <= dataStatusReg;
+outStatus(1 downto 0) <= dataStatusReg;
+outStatus(2) <= rdy_int;
 
 smpl_state_proc_reg: process(clk, reset, tickPreCnt)
 begin

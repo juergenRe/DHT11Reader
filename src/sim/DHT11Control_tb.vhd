@@ -23,6 +23,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.all;
 use IEEE.numeric_std.all;
+use work.DHT11SimuTestDefs.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -49,304 +50,12 @@ constant NDIV:          integer := 99;
 
 signal outT:           std_logic_vector(15 downto 0);      -- temperature
 signal outH:           std_logic_vector(15 downto 0);      -- humidity
-signal outStatus:      std_logic_vector(1 downto 0);       -- status: [1]: sample available; [0]: error
+signal outStatus:      std_logic_vector(2 downto 0);       -- status: [1]: sample available; [0]: error
 signal rdy:            std_logic;                          -- component ready to receive new settings
 signal dhtOutSig:      std_logic;                          -- driver line to DHT11
 
 signal trg:            std_logic := '0';                   -- new settings trigger
 signal dhtInSig:       std_logic := '1';                   -- input line towards simulated DHT11
-
------------------------------------
--- dht11 simulation signals
---
-constant NDATABIT:      integer := 40;
-signal txData:          std_logic_vector(NDATABIT-1 downto 0) := (others => '0');
-
--- timing constants: base timing, can be streteched by MULT
--- times are nominal times
-constant MULT:          integer := 5;
-constant TSTRTIN:       time := 10us;               -- min time to detect a trigger
-constant TWAKE:         time := 30us;               -- wake up 20..40us
-constant TSTRTL:        time := 80us;               -- duration of start bit low of DHT
-constant TSTRTH:        time := 80us;               -- duration of start bit high
-constant TBITL:         time := 50us;               -- duration of bit low time
-constant TBITH0:        time := 27us;               -- duration of bit high when transmitting '0'
-constant TBITH1:        time := 70us;               -- duration of bit high when transmitting '1'
-constant TEXCESSTIME:   time := 17ms;               -- excessive hold of one state
-
-constant TVAR_WAKE_MN:  time := 10us;               -- variation to get minimum time 
-constant TVAR_WAKE_MX:  time := 10us;               -- variation to get maximum time 
-constant TVAR_STRT_MN:  time := 20us;               -- variation to get minimum time 
-constant TVAR_STRT_MX:  time := 20us;               -- variation to get maximum time 
-constant TVAR_BITL_MN:  time := 10us;               -- variation to get minimum time 
-constant TVAR_BITL_MX:  time := 10us;               -- variation to get maximum time 
-constant TVAR_BITH0_MN: time :=  7us;               -- variation to get minimum time 
-constant TVAR_BITH0_MX: time := 13us;               -- variation to get maximum time 
-constant TVAR_BITH1_MN: time := 10us;               -- variation to get minimum time 
-constant TVAR_BITH1_MX: time := 10us;               -- variation to get maximum time 
-
-constant TD_ERROR:      time :=  1us;               -- additaional time increment to get out of good window
-
-signal t_trigin:        time;                   -- min external start bit
-signal t_wakeup:        time;
-signal t_startL:        time;
-signal t_startH:        time;
-signal t_bitL:          time;
-signal t_bitH0:         time;
-signal t_bitH1:         time;
-
--- Test Data definiton
-constant NB_TIMES:      natural := 7;
-type t_timing_ary is array (natural range <>) of time;
-type t_testdata is record
-      timings   : t_timing_ary(0 to NB_TIMES-1);	-- timing array
-	  data	    : std_logic_vector(31 downto 0); 	-- data to transmit
-	  expectRes	: boolean;						    -- expected result
-	  expectSC  : boolean;                          -- expected short circuit detection
-	  desc      : string(1 to 40);                  -- description string
-end record;
-type t_test_ary is array (natural range <>) of t_testdata;
-
-  ------------------------------------------------------------------------------
-  -- Stimulus data
-  ------------------------------------------------------------------------------
-  -- The following constant holds the stimulus for the testbench. It is
-  -- an ordered array of timings and data to transmit.
-  ------------------------------------------------------------------------------
-constant test_data : t_test_ary := (
-    0       => (            -- good timing
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => false,
-      expectSC => false,
-      desc      => "<0> Good timings A                      "),
-    1       => (            -- good timing
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"00000000",
-      expectRes => false,
-      expectSC => false,
-      desc      => "<1> Good timings B                      "),
-    2       => (            -- good timing
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"FFFFFFFF",
-      expectRes => false,
-      expectSC => false,
-      desc      => "<2> Good timings C                      "),
-    3       => (            -- wake up too long
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE + TVAR_WAKE_MX + TD_ERROR,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<3> Wake up too long                    "),
-    4       => (            -- Start bit "0" DHT too short
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL - TVAR_STRT_MN - TD_ERROR,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<4> Start bit DHT too short             "),
-    5       => (            -- Start bit "0" DHT too long
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL + TVAR_STRT_MX + TD_ERROR,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<5> Start bit DHT too long              "),
-    6       => (            -- Start bit "1" DHT too short
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH - TVAR_STRT_MN - TD_ERROR,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<6> Start bit DHT High too short        "),
-    7       => (            -- Start bit "1" DHT too long
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH + TVAR_STRT_MX + TD_ERROR,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<7> Start bit DHT High too long         "),
-    8       => (            -- TXLow phase too short
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,
-                     4 => TBITL - TVAR_BITL_MN - TD_ERROR,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<8> TX Bit low too short                "),
-    9       => (            -- TXLow phase too long
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL + TVAR_BITL_MX + TD_ERROR,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<9> TX Bit low too long                 "),
-    10      => (            -- TXHigh phase too short (less than '0' bit length)
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,
-                     4 => TBITL,  
-                     5 => TBITH0 - TVAR_BITH0_MN - TD_ERROR,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<10> TX Bit High too short for '0'      "),
-      --           "0123456789012345678901234567890123456789"
-    11      => (            -- TXHigh phase too long for '0'
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0 + TVAR_BITH0_MX + TD_ERROR,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<11> TX Bit High too long for '0'       "),
-      --           "0123456789012345678901234567890123456789"
-    12      => (            -- TXHigh phase too short for '1'
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1 - TVAR_BITH1_MN - TD_ERROR),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<12> TX Bit High too short for '1'      "),
-      --           "0123456789012345678901234567890123456789"
-    13      => (            -- TXHigh phase too long for '1'
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1 + TVAR_BITH1_MX + TD_ERROR),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<13> TX Bit High too long for '1'       "),
-    14      => (            -- repeat good timing to check if status is reset correctly
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => false,
-      expectSC => false,
-      desc      => "<14> Good timings A (repeat)            "),
-    15      => (            -- excessive start bit low --> counter overflow
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TEXCESSTIME,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => true,
-      desc      => "<15> Excess start bit L                 "),
-    16      => (            -- excessive start bit high --> counter overflow
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TEXCESSTIME,  
-                     4 => TBITL,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<16> Excess start bit H                 "),
-    17      => (            -- excessive Tx bit high --> counter overflow
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TEXCESSTIME,  
-                     5 => TBITH0,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => true,
-      desc      => "<17> Excess Tx bit L                    "),
-    18      => (            -- excessive Tx bit low --> counter overflow
-      timings   => ( 0 => TSTRTIN,
-                     1 => TWAKE,
-                     2 => TSTRTL,  
-                     3 => TSTRTH,  
-                     4 => TBITL,  
-                     5 => TEXCESSTIME,  
-                     6 => TBITH1),
-      data      => x"5577AA33",
-      expectRes => true,
-      expectSC => false,
-      desc      => "<18> Excess Tx bit H                    ")
-      --           "0123456789012345678901234567890123456789"
-      ); 
 
 type t_testState is (stPowOn, stIdle, stTestSetUp, stTestStart, stTestRun, stTestEnd);
 signal testStateReg:    t_testState;
@@ -356,7 +65,8 @@ signal testDone:        std_logic;
 signal testCnt:         unsigned(4 downto 0);       -- holds the current test index
 
 ----------------------------------------------------------------
-signal expectResult:boolean;
+signal expectResult:    boolean;
+signal expectSC:        boolean;
 
 ----------------------------------------
 component DHT11Control
@@ -370,7 +80,7 @@ component DHT11Control
         cntTick:        out std_logic;                          -- counter tick
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(1 downto 0);       -- status out: [1]: sample available; [0]: error
+        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [1]: sample available; [0]: error
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -502,26 +212,17 @@ begin
         variable res:       integer;
         variable stat:      boolean;
         variable statsc:    boolean;
+        variable t0, t1, t2, t3, t4, t5, t6: time;
         
-        function calc_crc ( data : in std_logic_vector) return std_logic_vector is
-            variable crc: std_logic_vector(7 downto 0);
-		begin
-		    crc := data(31 downto 24) + data(23 downto 16) + data(15 downto 8) + data(7 downto 0);
-		    return crc;
-		end;
-        procedure getActData(idx: in natural; dx: out std_logic_vector; expectResult: out boolean; expectSC: out boolean; desc: out string) is
+        procedure setTiming(t0, t1, t2, t3, t4, t5, t6: in time) is
         begin
-            dx := test_data(idx).data;
-            t_trigin <= test_data(idx).timings(0);
-            t_wakeup <= test_data(idx).timings(1);
-            t_startL <= test_data(idx).timings(2);
-            t_startH <= test_data(idx).timings(3);
-            t_bitL  <= test_data(idx).timings(4);
-            t_bitH0 <= test_data(idx).timings(5);
-            t_bitH1 <= test_data(idx).timings(6);
-            expectResult := test_data(idx).expectRes;
-            expectSC := test_data(idx).expectSC;
-            desc := test_data(idx).desc;
+            t_trigin <= t0; 
+            t_wakeup <= t1; 
+            t_startL <= t2;
+            t_startH <= t3;
+            t_bitL   <= t4;
+            t_bitH0  <= t5;
+            t_bitH1  <= t6;
         end;
     begin
         case testStateReg is
@@ -535,8 +236,11 @@ begin
                 end if;
             when stTestSetUp =>
                 testCnt <= TO_UNSIGNED(actIdx, 5);
-                getActData(actIdx, dataVal, er, sc, desc);
+                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, er, sc, desc);
+                setTiming(t0, t1, t2, t3, t4, t5, t6);
                 txData <= dataVal & calc_crc(dataVal);
+                expectResult <= er;
+                expectSC <= sc;
                 wrOut("---------------------------------------------");
                 wrOut("Start Test: " & desc);
                 testStateNxt <= stTestStart;
@@ -556,7 +260,7 @@ begin
                         report "Expected status unequal expect=" & boolean'image(er) & " => measured=" & boolean'image(stat) severity error;
                         
                     assert not (sc xor statsc)
-                        report "Expected short circuit status unequal: expect=" & boolean'image(sc) & " => measured=" & boolean'image(statsc) severity error;
+                        report "Expected error status unequal: expect=" & boolean'image(sc) & " => measured=" & boolean'image(statsc) severity error;
                         
                     if not stat then
                         assert res = conv_integer(dataVal)

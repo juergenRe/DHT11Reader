@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="DHT11ControlWrap_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="DHT11ControlWrap_tb" />
+            <top_module name="dht11simutestdefs" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="16890545000000fs"></ZoomStartTime>
+      <ZoomEndTime time="16925465000001fs"></ZoomEndTime>
+      <Cursor1Time time="16896365000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="303"></NameColumnWidth>
+      <ValueColumnWidth column_width="116"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="30" />
+   <wave_markers>
+      <marker time="15000000" label="" />
+   </wave_markers>
+   <wvobject fp_name="/DHT11ControlWrap_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/U_CONTROL" type="array">
+      <obj_property name="ElementShortName">U_CONTROL[1:0]</obj_property>
+      <obj_property name="ObjectShortName">U_CONTROL[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/U_STATUS" type="array">
+      <obj_property name="ElementShortName">U_STATUS[2:0]</obj_property>
+      <obj_property name="ObjectShortName">U_STATUS[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/U_VALUES" type="array">
+      <obj_property name="ElementShortName">U_VALUES[31:0]</obj_property>
+      <obj_property name="ObjectShortName">U_VALUES[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/U_WR_TICK" type="logic">
+      <obj_property name="ElementShortName">U_WR_TICK</obj_property>
+      <obj_property name="ObjectShortName">U_WR_TICK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/U_RD_TICK" type="logic">
+      <obj_property name="ElementShortName">U_RD_TICK</obj_property>
+      <obj_property name="ObjectShortName">U_RD_TICK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/dhtInSig" type="logic">
+      <obj_property name="ElementShortName">dhtInSig</obj_property>
+      <obj_property name="ObjectShortName">dhtInSig</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/dhtOutSig" type="logic">
+      <obj_property name="ElementShortName">dhtOutSig</obj_property>
+      <obj_property name="ObjectShortName">dhtOutSig</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider72">
+      <obj_property name="label">DHT11Wrapper</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/int_reset" type="logic">
+      <obj_property name="ElementShortName">int_reset</obj_property>
+      <obj_property name="ObjectShortName">int_reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/firstSampleDone" type="logic">
+      <obj_property name="ElementShortName">firstSampleDone</obj_property>
+      <obj_property name="ObjectShortName">firstSampleDone</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/cntTick" type="logic">
+      <obj_property name="ElementShortName">cntTick</obj_property>
+      <obj_property name="ObjectShortName">cntTick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/smpl_dly/max_tick" type="logic">
+      <obj_property name="ElementShortName">max_tick</obj_property>
+      <obj_property name="ObjectShortName">max_tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/rdy_tick" type="logic">
+      <obj_property name="ElementShortName">rdy_tick</obj_property>
+      <obj_property name="ObjectShortName">rdy_tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/stSmplReg" type="other">
+      <obj_property name="ElementShortName">stSmplReg</obj_property>
+      <obj_property name="ObjectShortName">stSmplReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/stSmplStateReg" type="other">
+      <obj_property name="ElementShortName">stSmplStateReg</obj_property>
+      <obj_property name="ObjectShortName">stSmplStateReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/smplTrg" type="logic">
+      <obj_property name="ElementShortName">smplTrg</obj_property>
+      <obj_property name="ObjectShortName">smplTrg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/cfg_tick" type="logic">
+      <obj_property name="ElementShortName">cfg_tick</obj_property>
+      <obj_property name="ObjectShortName">cfg_tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/actControl" type="array">
+      <obj_property name="ElementShortName">actControl[1:0]</obj_property>
+      <obj_property name="ObjectShortName">actControl[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider317">
+      <obj_property name="label">DHT11Control</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/trg" type="logic">
+      <obj_property name="ElementShortName">trg</obj_property>
+      <obj_property name="ObjectShortName">trg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/rdy" type="logic">
+      <obj_property name="ElementShortName">rdy</obj_property>
+      <obj_property name="ObjectShortName">rdy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/smplCntReg" type="array">
+      <obj_property name="ElementShortName">smplCntReg[14:0]</obj_property>
+      <obj_property name="ObjectShortName">smplCntReg[14:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/bitCntReg" type="array">
+      <obj_property name="ElementShortName">bitCntReg[5:0]</obj_property>
+      <obj_property name="ObjectShortName">bitCntReg[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dhtdev/outStatus" type="array">
+      <obj_property name="ElementShortName">outStatus[2:0]</obj_property>
+      <obj_property name="ObjectShortName">outStatus[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider136">
+      <obj_property name="label">ModMCnt</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/smpl_dly/clk_en" type="logic">
+      <obj_property name="ElementShortName">clk_en</obj_property>
+      <obj_property name="ObjectShortName">clk_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/smpl_dly/stCntReg" type="other">
+      <obj_property name="ElementShortName">stCntReg</obj_property>
+      <obj_property name="ObjectShortName">stCntReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/smpl_dly/q" type="array">
+      <obj_property name="ElementShortName">q[9:0]</obj_property>
+      <obj_property name="ObjectShortName">q[9:0]</obj_property>
+   </wvobject>
+</wave_config>
