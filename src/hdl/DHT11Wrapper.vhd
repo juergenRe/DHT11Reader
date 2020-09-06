@@ -42,13 +42,13 @@ entity DHT11Wrapper is
 	port (
 	    clk         : in std_logic;
 	    reset       : in std_logic;
-		-- control bits to start conversion and have automatic conversion every second
+		-- control bits to start conversion and have automatic conversion every second: Auto Sample, Start
         U_CONTROL   : in std_logic_vector(1 downto 0);
-        --  Status bits: Ready, Error
+        --  Status bits: Ready, Short circuit, Error
         U_STATUS    : out std_logic_vector(2 downto 0);
         -- measured values:
-        -- U_VALUES(31 downto 16): 16 bits for temperature
-        -- U_VALUES(15 downto 0):  16 bits for hunidity
+        -- U_VALUES(31 downto 16): 16 bits for humidity
+        -- U_VALUES(15 downto 0):  16 bits for temperature 
         U_VALUES    : out std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
 		-- output from AXI-module: '1' for one cycle when data is written.
 		-- validates U_CONTROL
@@ -78,7 +78,7 @@ architecture Behavioral of DHT11Wrapper is
     signal dhtOutSignal:    std_logic;
     signal outT:            std_logic_vector(15 downto 0);      -- temperature
     signal outH:            std_logic_vector(15 downto 0);      -- humidity
-    signal outStatus:       std_logic_vector(2 downto 0);       -- status: [1]: sample available; [0]: error
+    signal outStatus:       std_logic_vector(2 downto 0);       -- status: [2]: sample available; [1]: short circuit; [0]: error
     
     signal cfg_tick:        std_logic;
 --    signal done_tick:       std_logic;
@@ -114,7 +114,7 @@ architecture Behavioral of DHT11Wrapper is
             cntTick:        out std_logic;                          -- counter tick
             outT:           out std_logic_vector(15 downto 0);      -- temperature out
             outH:           out std_logic_vector(15 downto 0);      -- humidity out
-            outStatus:      out std_logic_vector(2 downto 0);       -- status out: [1]: sample available; [0]: error
+            outStatus:      out std_logic_vector(2 downto 0);       -- status out: [2]: sample available; [1]: short circuit; [0]: error
             trg:            in std_logic;                           -- new settings trigger
             rdy:            out std_logic;                          -- component ready to receive new settings
             dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -187,7 +187,7 @@ begin
     int_reset <= '1' when reset = '1' or stSmplStateReg = stPwrOn else '0';
     
     -- handle automatic / one shot sampling states
-    -- one shot: after a successful sample control need to be set again
+    -- one shot: after a successful sample, control need to be set again
     p_auto_reg: process(clk, int_reset)
     begin
         if rising_edge(clk) then

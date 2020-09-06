@@ -66,7 +66,12 @@ architecture arch_imp of DHT11Reader is
 		C_S_AXI_ADDR_WIDTH	: integer := 4
 		);
 		port (
-		-- register assignment: 0: U_VALUES; 4: U_STATUS; 8: U_CONTROL 
+		-- register assignment: 
+		-- 0: U_VALUES; (read-only)
+		-- 4: U_STATUS; (read-only)
+		-- 8: U_CONTROL; (write-only)
+		-- C: unused;
+		-- 
 		-- Control port: AUTO, TRG
         U_CONTROL       : out std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error, DataValid

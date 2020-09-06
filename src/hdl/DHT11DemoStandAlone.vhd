@@ -86,7 +86,7 @@ attribute mark_debug : string;
 --attribute mark_debug of rdy: signal is "true";
 --attribute mark_debug of trg: signal is "true";
 --attribute mark_debug of cntTick: signal is "true";
-attribute mark_debug of DataLine: signal is "true";
+--attribute mark_debug of DataLine: signal is "true";
 
 ------------------------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ component DHT11Control
         cntTick:        out std_logic;                          -- counter tick
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [1]: sample available; [0]: error
+        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [2]: Ready; [1]: short circuit; [0]: error
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11

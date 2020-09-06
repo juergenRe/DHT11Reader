@@ -32,7 +32,7 @@ set_property -dict {PACKAGE_PIN L20 IOSTANDARD LVCMOS33} [get_ports {btn[2]}]
 set_property -dict {PACKAGE_PIN L19 IOSTANDARD LVCMOS33} [get_ports {btn[3]}]
 
 ## Pmod Header JA
-set_property -dict { PACKAGE_PIN Y18   IOSTANDARD LVCMOS33 } [get_ports { DataLine }]; #IO_L17N_T2_34 Sch=JA1_N
+set_property -dict {PACKAGE_PIN Y18 IOSTANDARD LVCMOS33} [get_ports DataLine]
 #set_property -dict { PACKAGE_PIN Y19   IOSTANDARD LVCMOS33  PULLDOWN true } [get_ports { pwm[1] }]; #IO_L17N_T2_34 Sch=JA1_N
 #set_property -dict { PACKAGE_PIN Y16   IOSTANDARD LVCMOS33  PULLDOWN true } [get_ports { pwm[2] }]; #IO_L7P_T1_34 Sch=JA2_P
 #set_property -dict { PACKAGE_PIN Y17   IOSTANDARD LVCMOS33  PULLDOWN true } [get_ports { pwm[3] }]; #IO_L7N_T1_34 Sch=JA2_N
@@ -87,8 +87,8 @@ set_property -dict { PACKAGE_PIN Y18   IOSTANDARD LVCMOS33 } [get_ports { DataLi
 #set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports { hdmi_tx_sda }]; #IO_L8N_T1_AD10N_35 Sch=HDMI_TX_SDA
 
 ## ChipKit Outer Digital Header
-set_property -dict { PACKAGE_PIN T14   IOSTANDARD LVCMOS33 } [get_ports { ck_io[0]  }]; #IO_L5P_T0_34            Sch=CK_IO0
-set_property -dict { PACKAGE_PIN U12   IOSTANDARD LVCMOS33 } [get_ports { ck_io[1]  }]; #IO_L2N_T0_34            Sch=CK_IO1
+set_property -dict {PACKAGE_PIN T14 IOSTANDARD LVCMOS33} [get_ports {ck_io[0]}]
+set_property -dict {PACKAGE_PIN U12 IOSTANDARD LVCMOS33} [get_ports {ck_io[1]}]
 #set_property -dict { PACKAGE_PIN U13   IOSTANDARD LVCMOS33 } [get_ports { ck_io2  }]; #IO_L3P_T0_DQS_PUDC_B_34 Sch=CK_IO2
 #set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports { ck_io3  }]; #IO_L3N_T0_DQS_34        Sch=CK_IO3
 #set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports { ck_io4  }]; #IO_L10P_T1_34           Sch=CK_IO4
@@ -183,4 +183,5 @@ set_property -dict { PACKAGE_PIN U12   IOSTANDARD LVCMOS33 } [get_ports { ck_io[
 #set_property PACKAGE_PIN G18 [get_ports {netic20_g18}]; #IO_L16N_T2_35
 #set_property PACKAGE_PIN T9 [get_ports {netic20_t9}]; #IO_L12P_T1_MRCC_13
 #set_property PACKAGE_PIN U9 [get_ports {netic20_u9}]; #IO_L17P_T2_13
+
 

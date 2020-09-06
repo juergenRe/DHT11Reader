@@ -43,7 +43,7 @@ entity DHT11Control is
         cntTick:        out std_logic;                          -- counter tick
         outT:           out std_logic_vector(15 downto 0);      -- temperature out
         outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [0]: error, [1]: short circuit to '0' detected 
+        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [0]: error, [1]: short circuit to '0' detected [2] Rdy
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -93,6 +93,11 @@ constant CNT_DLY_TXH1_MN:   integer := 60-1;                      -- '1'-Bit min
 constant CNT_DLY_TXH1_MX:   integer := 80-1;                      -- '1'-Bit max 80us high --> after this: error
 constant CNT_DLY_POWON:     integer := tif(POWONDLY, 20, CNT_TIMEOUT_BIT);         -- power on timeout
 constant CNT_BITS:          integer := CNT_DLY_POWON + 1;         -- 21 bits counter for init delay --> ca. 2s max delay
+
+-- status definitions
+constant BIT_ERROR:         integer := 0;
+constant BIT_SHORT_CIRCUIT: integer := 1;
+constant BIT_RDY:           integer := 2;
 
 type tSmplStates is (stPowOn, stPowOnDly, stIdle,
                     stTrgSampling, stWaitStartBitHigh,
@@ -257,26 +262,27 @@ begin
         when stChkNewData =>
             if tickPreCnt = '1' and (stSmplReg = stStoreResult) then
                 dataSampleNxt <= actData;
-                dataStatusNxt <= "01"; 
+                dataStatusNxt <= "00"; 
             elsif tickPreCnt = '1' and (stSmplReg = stTrgSampling) then
                 -- reset error and indicate no valid data
                 -- otherwise the previous value is still valid and can be used.
-                if dataStatusReg(1) = '1' then
-                    dataStatusNxt <= (others => '0');
-                end if;
-            elsif tickPreCnt = '1' and (stSmplReg = stErrWaitEnd) then
-                dataStatusNxt(1) <= '1'; 
+--                if dataStatusReg(1) = '1' then
+--                    dataStatusNxt <= (others => '0');
+--                end if;
+                dataStatusNxt <= "00"; 
+--            elsif tickPreCnt = '1' and (stSmplReg = stErrWaitEnd) then
+--                dataStatusNxt(BIT_ERROR) <= '1'; 
             elsif tickPreCnt = '1' and (stSmplReg = stError) then
                 dataSampleNxt <= (others => '0');
-                dataStatusNxt(0) <= '1'; 
+                dataStatusNxt(BIT_ERROR) <= '1'; 
             end if;
      end case;
 end process out_smpl_nxt;
 
 outH <= dataSampleReg(DHTDATA_H_TOP-1 downto DHTDATA_H_BOT);
 outT <= dataSampleReg(DHTDATA_T_TOP-1 downto DHTDATA_T_BOT);
-outStatus(1 downto 0) <= dataStatusReg;
-outStatus(2) <= rdy_int;
+outStatus(BIT_SHORT_CIRCUIT downto BIT_ERROR) <= dataStatusReg;
+outStatus(BIT_RDY) <= rdy_int;
 
 smpl_state_proc_reg: process(clk, reset, tickPreCnt)
 begin
