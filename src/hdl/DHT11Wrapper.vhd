@@ -86,15 +86,13 @@ architecture Behavioral of DHT11Wrapper is
     signal rdy_status:      std_logic;
     signal int_reset:       std_logic;
 
-    type t_stSmplState is (stPwrOn, stIdle, stSampleStart, stSample, stWait);
+    type t_stSmplState is (stPwrOn, stIdle, stSampleStart, stSample, stWait, stResetCnt);
     signal stSmplStateReg:     t_stSmplState;    
     signal stSmplStateNxt:     t_stSmplState;
     
     signal rdy:             std_logic;                          -- component ready to receive new settings
     signal trg:             std_logic;                          -- new settings trigger
     signal cntTick:         std_logic;
-    signal smplDlyReg:      std_logic_vector(SPMPLDLYBITS-1 downto 0);
-    signal smplDlyNxt:      std_logic_vector(SPMPLDLYBITS-1 downto 0);
     
     signal cntEn:           std_logic;
     signal cntDone:         std_logic;
@@ -102,6 +100,14 @@ architecture Behavioral of DHT11Wrapper is
     signal actControl:      std_logic_vector(1 downto 0);       -- actual written control setting
     signal actControlNxt:   std_logic_vector(1 downto 0);
     signal firstSampleDone: std_logic;
+    signal actCount:        std_logic_vector(SPMPLDLYBITS-1 downto 0);
+
+    -- debug attributes
+--    attribute mark_debug : string;
+--    attribute mark_debug of cntTick: signal is "true";
+--    attribute mark_debug of cntDone: signal is "true";
+--    attribute mark_debug of actCount: signal is "true";
+--    attribute mark_debug of stSmplStateReg: signal is "true";
     
     component DHT11Control
         generic (
@@ -179,9 +185,9 @@ begin
             reset       => reset,
             clk_en      => cntEn,
             max_tick    => cntDone,
-            q           => open
+            q           => actCount
         );
-    cntEn <= '1' when ((stSmplStateReg = stWait) or (stSmplStateReg = stPwrOn)) and cntTick = '1' else '0';    
+    cntEn <= '1' when ((stSmplStateReg = stWait) or (stSmplStateReg = stPwrOn) or (stSmplStateReg = stResetCnt)) and cntTick = '1' else '0';    
      
     cfg_tick <= U_WR_TICK;
     int_reset <= '1' when reset = '1' or stSmplStateReg = stPwrOn else '0';
@@ -234,7 +240,7 @@ begin
         case stSmplStateReg is
             when stPwrOn =>
                 if cntDone = '1' then
-                    stSmplStateNxt <= stIdle;
+                    stSmplStateNxt <= stResetCnt;
                 end if;
             when stIdle =>
                 if smplTrg = '1' and rdy = '1' then
@@ -250,6 +256,10 @@ begin
                 end if;
             when stWait =>
                 if cntDone = '1' then
+                    stSmplStateNxt <= stResetCnt;
+                end if;
+            when stResetCnt =>
+                if cntDone = '0' then
                     stSmplStateNxt <= stIdle;
                 end if;
         end case;

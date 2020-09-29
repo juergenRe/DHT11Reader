@@ -9,6 +9,22 @@ Register description:
 - Register 3: (read-only) Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
 - Register 4: unused
 
+## Testing projects:
+- DHT11DemoStandAlone: runs as non-BD project in PL to access directly the DHT11 component
+- DHT11DemoWrapper: runs a non-BD project in PL using the wrapper designed to be integrated with AXI interface
+Both projects aim to be able to debug the logic using ILA. 
+
+### Preparation for test:
+- uncomment mark debug nets
+- set one of the test projects as Top
+- enable constraints files
+
+### Preparation for IP generation
+- set DHT11Reader as TOP
+- disable constraints files
+- run syntehsis as base check
+- remove all ILA cores
+
 ## Recreating the project
 This should be done using the scripts in /proj subfolder:
 - cd into <project folder>/proj

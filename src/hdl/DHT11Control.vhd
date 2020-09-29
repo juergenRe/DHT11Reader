@@ -283,6 +283,7 @@ outH <= dataSampleReg(DHTDATA_H_TOP-1 downto DHTDATA_H_BOT);
 outT <= dataSampleReg(DHTDATA_T_TOP-1 downto DHTDATA_T_BOT);
 outStatus(BIT_SHORT_CIRCUIT downto BIT_ERROR) <= dataStatusReg;
 outStatus(BIT_RDY) <= rdy_int;
+outStatus(BIT_SHORT_CIRCUIT) <= '0';
 
 smpl_state_proc_reg: process(clk, reset, tickPreCnt)
 begin
