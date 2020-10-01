@@ -82,7 +82,8 @@ architecture Behavioral of DHT11Wrapper is
     
     signal cfg_tick:        std_logic;
 --    signal done_tick:       std_logic;
-    signal rdy_tick:        std_logic;
+    signal rdy_r_tick:      std_logic;
+    signal rdy_f_tick:      std_logic;
     signal rdy_status:      std_logic;
     signal int_reset:       std_logic;
 
@@ -104,10 +105,13 @@ architecture Behavioral of DHT11Wrapper is
 
     -- debug attributes
 --    attribute mark_debug : string;
+--    attribute mark_debug of trg: signal is "true";
+--    attribute mark_debug of rdy: signal is "true";
 --    attribute mark_debug of cntTick: signal is "true";
 --    attribute mark_debug of cntDone: signal is "true";
 --    attribute mark_debug of actCount: signal is "true";
 --    attribute mark_debug of stSmplStateReg: signal is "true";
+--    attribute mark_debug of rdy_status: signal is "true";
     
     component DHT11Control
         generic (
@@ -205,11 +209,11 @@ begin
         end if;
     end process p_auto_reg;
     
-    p_auto_nxt: process(cfg_tick, rdy_tick, actControl)
+    p_auto_nxt: process(cfg_tick, rdy_r_tick, actControl)
     begin
         actControlNxt <= actControl;
         -- reset trigger bit when done in one-shot mode, otherwise keep it
-        if rdy_tick = '1' then
+        if rdy_r_tick = '1' then
             if actControl(CNTRL_AUTO) = '0' then
                 actControlNxt <= (others => '0');
             end if; 
@@ -265,16 +269,16 @@ begin
         end case;
     end process p_smplState_nxt;
     trg <= '1' when stSmplStateReg = stSampleStart else '0';
-    rdy_status <= '1' when (stSmplStateReg = stWait) or (stSmplStateReg = stIdle) else '0';
+    rdy_status <= '0' when (stSmplStateReg = stSample) or (stSmplStateReg = stPwrOn) else '1';
     
 	rdy_tick_inst: EdgeDetect
         port map (
             clk         => clk,
             reset       => reset,
             level       => rdy_status,
-            tick_rise   => rdy_tick,
-            tick_fall   => open
+            tick_rise   => rdy_r_tick,
+            tick_fall   => rdy_f_tick
         );
-    U_RD_TICK <= rdy_tick;
+    U_RD_TICK <= rdy_r_tick or rdy_f_tick;
 
 end Behavioral;

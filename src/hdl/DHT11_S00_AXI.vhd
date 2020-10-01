@@ -402,8 +402,7 @@ begin
 
 	-- Add user logic here
     -- write to register 3 to transport status
-	wr_reg2: process (S_AXI_ACLK)
-	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
+	wr_out_data: process (S_AXI_ACLK)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
@@ -419,7 +418,7 @@ begin
           end if;
         end if;
       end if;
-    end process wr_reg2;
+    end process wr_out_data;
 	-- User logic ends
 
 end arch_imp;
