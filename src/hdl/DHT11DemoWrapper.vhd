@@ -103,8 +103,8 @@ component DHT11Wrapper is
 	    reset       : in std_logic;
 		-- control bits to start conversion and have automatic conversion every second
         U_CONTROL   : in std_logic_vector(1 downto 0);
-        --  Status bits: Ready, Error
-        U_STATUS    : out std_logic_vector(2 downto 0);
+        --  Status bits: Ready, DataAvail, Short circuit, Error
+        U_STATUS    : out std_logic_vector(3 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for temperature
         -- U_VALUES(15 downto 0):  16 bits for hunidity
@@ -231,8 +231,8 @@ led(0) <= act_status(2);
 led(1) <= act_status(0);
 led(2) <= sw(0);
 led(3) <= btn(3);
---ck_io(0) <= trg;
---ck_io(1) <= rdy;
+ck_io(0) <= wr_tick;
+ck_io(1) <= rd_tick;
 
 act_control(0) <= '1' when ((stTranReg = stWaitRdy) or (stTranReg = stSetTrg) or (stTranReg = stWaitActive)) else '0';
 act_control(1) <= sw(0);
@@ -264,7 +264,7 @@ begin
                 stTranNxt <= stWaitRdy;
             end if;
         when stWaitRdy => 
-            if act_status(2) = '1' then
+            if act_status(3) = '1' then
                 stTranNxt <= stSetTrg;
             end if;
         when stSetTrg =>

@@ -20,7 +20,7 @@ entity DHT11_S00_AXI is
 		-- Control port: AUTO, TRG
         U_CONTROL   : out std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error, DataValid
-        U_STATUS    : in std_logic_vector(2 downto 0);
+        U_STATUS    : in std_logic_vector(3 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature
@@ -91,6 +91,9 @@ entity DHT11_S00_AXI is
 		-- Read ready. This signal indicates that the master can
     		-- accept the read data and response information.
 		S_AXI_RREADY	: in std_logic
+		-- debug
+		;
+		dbg_reg: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
 	);
 end DHT11_S00_AXI;
 
@@ -128,11 +131,13 @@ architecture arch_imp of DHT11_S00_AXI is
 	signal reg_data_out	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	signal byte_index	: integer;
 	signal aw_en	: std_logic;
+	
+	signal wren_dly: std_logic;
 
 begin
     -- user signal assignments
     U_CONTROL <= slv_reg2(1 downto 0);
-    U_WR_TICK <= slv_reg_wren;
+    U_WR_TICK <= wren_dly;
     
 	-- I/O Connections assignments
 
@@ -411,7 +416,8 @@ begin
 	    else
 	      if U_RD_TICK = '1' then
             slv_reg0 <= U_VALUES;
-            slv_reg1(2 downto 0) <= U_STATUS;
+            slv_reg1(3 downto 0) <= U_STATUS;
+            slv_reg1(C_S_AXI_DATA_WIDTH-1 downto 4) <= slv_reg1(C_S_AXI_DATA_WIDTH-1 downto 4);  
           else
             slv_reg0 <= slv_reg0;
             slv_reg1 <= slv_reg1;
@@ -419,6 +425,23 @@ begin
         end if;
       end if;
     end process wr_out_data;
+    
+    rd_tick_gen: process(S_AXI_ACLK)
+    begin
+	  if rising_edge(S_AXI_ACLK) then 
+	    if S_AXI_ARESETN = '0' then
+	      wren_dly <= '0';
+	    else
+          if slv_reg_wren = '1' then
+            wren_dly <= '1';
+          else
+            wren_dly <= '0';
+          end if;
+        end if;
+      end if; 
+    end process rd_tick_gen;
 	-- User logic ends
-
+    -- debug
+    dbg_reg <= reg_data_out;
+    
 end arch_imp;

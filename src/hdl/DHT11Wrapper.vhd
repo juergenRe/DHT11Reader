@@ -21,6 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use ieee.numeric_std.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -44,8 +45,8 @@ entity DHT11Wrapper is
 	    reset       : in std_logic;
 		-- control bits to start conversion and have automatic conversion every second: Auto Sample, Start
         U_CONTROL   : in std_logic_vector(1 downto 0);
-        --  Status bits: Ready, Short circuit, Error
-        U_STATUS    : out std_logic_vector(2 downto 0);
+        --  Status bits: Ready, DataAvail, Short circuit, Error
+        U_STATUS    : out std_logic_vector(3 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature 
@@ -58,13 +59,18 @@ entity DHT11Wrapper is
 		-- feed through of DHT signals
         dhtInSig    : in std_logic;                           -- input line from DHT11
         dhtOutSig   : out std_logic                           -- output line to DHT11
+        -- debug outputs
+        ;
+        dbg_rdy     : out std_logic;
+        dbg_state   : out std_logic_vector(2 downto 0)
 	);
 end DHT11Wrapper;
 
 architecture Behavioral of DHT11Wrapper is
 --    constant CFG_ONOFF:     integer := C_S_AXI_DATA_WIDTH -1;
 --    constant CFG_STATUS:    integer := C_S_AXI_DATA_WIDTH -1;
-    constant STATUS_RDY:    integer := 2;                           -- bit for Ready
+    constant STATUS_RDY:    integer := 3;                           -- bit for Ready
+    constant DATA_AVAIL:    integer := 2;                           -- bit for new data available
     constant STATUS_SHC:    integer := 1;                           -- bit for short circuit indication
     constant STATUS_ERR:    integer := 0;                           -- bit error
     
@@ -82,6 +88,9 @@ architecture Behavioral of DHT11Wrapper is
     
     signal cfg_tick:        std_logic;
 --    signal done_tick:       std_logic;
+    signal dav_r_tick:      std_logic;
+    signal dav_f_tick:      std_logic;
+    signal dav_status:      std_logic;
     signal rdy_r_tick:      std_logic;
     signal rdy_f_tick:      std_logic;
     signal rdy_status:      std_logic;
@@ -100,7 +109,6 @@ architecture Behavioral of DHT11Wrapper is
     signal smplTrg:         std_logic;
     signal actControl:      std_logic_vector(1 downto 0);       -- actual written control setting
     signal actControlNxt:   std_logic_vector(1 downto 0);
-    signal firstSampleDone: std_logic;
     signal actCount:        std_logic_vector(SPMPLDLYBITS-1 downto 0);
 
     -- debug attributes
@@ -175,7 +183,7 @@ begin
          );
     dhtInSignal <= dhtInSig;
     dhtOutSig <= dhtOutSignal;
-    U_STATUS <= outStatus;
+    U_STATUS <= rdy_status & outStatus;
     U_VALUES <= outH & outT;
 
     -- 1s delay counter for power on and waiting time after a sample
@@ -269,8 +277,20 @@ begin
         end case;
     end process p_smplState_nxt;
     trg <= '1' when stSmplStateReg = stSampleStart else '0';
-    rdy_status <= '0' when (stSmplStateReg = stSample) or (stSmplStateReg = stPwrOn) else '1';
     
+    -- conditions for updating the status register resp. the output value register
+    dav_status <= '0' when (stSmplStateReg = stSample) or (stSmplStateReg = stPwrOn) else '1';
+    rdy_status <= '1' when stSmplStateReg = stIdle else '0';
+    
+	dav_tick_inst: EdgeDetect
+        port map (
+            clk         => clk,
+            reset       => reset,
+            level       => dav_status,
+            tick_rise   => dav_r_tick,
+            tick_fall   => dav_f_tick
+        );
+
 	rdy_tick_inst: EdgeDetect
         port map (
             clk         => clk,
@@ -279,6 +299,9 @@ begin
             tick_rise   => rdy_r_tick,
             tick_fall   => rdy_f_tick
         );
-    U_RD_TICK <= rdy_r_tick or rdy_f_tick;
+    U_RD_TICK <= dav_r_tick or dav_r_tick or rdy_r_tick or rdy_f_tick;
 
+    -- debug assignments
+    dbg_rdy <= rdy;
+    dbg_state <= std_logic_vector(to_unsigned(t_stSmplState'POS(stSmplStateReg), 3));
 end Behavioral;

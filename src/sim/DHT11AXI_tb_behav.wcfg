@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="DHT11AXI_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="DHT11AXI_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="158400001fs"></ZoomEndTime>
+      <Cursor1Time time="0fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="370"></NameColumnWidth>
+      <ValueColumnWidth column_width="211"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="14" />
+   <wvobject fp_name="/DHT11AXI_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/s00_axi_aresetn" type="logic">
+      <obj_property name="ElementShortName">s00_axi_aresetn</obj_property>
+      <obj_property name="ObjectShortName">s00_axi_aresetn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/U_CONTROL" type="array">
+      <obj_property name="ElementShortName">U_CONTROL[1:0]</obj_property>
+      <obj_property name="ObjectShortName">U_CONTROL[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/U_STATUS" type="array">
+      <obj_property name="ElementShortName">U_STATUS[2:0]</obj_property>
+      <obj_property name="ObjectShortName">U_STATUS[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/U_VALUES" type="array">
+      <obj_property name="ElementShortName">U_VALUES[31:0]</obj_property>
+      <obj_property name="ObjectShortName">U_VALUES[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/U_WR_TICK" type="logic">
+      <obj_property name="ElementShortName">U_WR_TICK</obj_property>
+      <obj_property name="ObjectShortName">U_WR_TICK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/U_RD_TICK" type="logic">
+      <obj_property name="ElementShortName">U_RD_TICK</obj_property>
+      <obj_property name="ObjectShortName">U_RD_TICK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11AXI_tb/axi_readData" type="array">
+      <obj_property name="ElementShortName">axi_readData[31:0]</obj_property>
+      <obj_property name="ObjectShortName">axi_readData[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="group70" type="group">
+      <obj_property name="label">AXI_AddrRead</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_araddr" type="array">
+         <obj_property name="ElementShortName">s00_axi_araddr[3:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_araddr[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_arprot" type="array">
+         <obj_property name="ElementShortName">s00_axi_arprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_arprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_arvalid" type="logic">
+         <obj_property name="ElementShortName">s00_axi_arvalid</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_arvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_arready" type="logic">
+         <obj_property name="ElementShortName">s00_axi_arready</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_arready</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group72" type="group">
+      <obj_property name="label">AXI_DataRead</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_rdata" type="array">
+         <obj_property name="ElementShortName">s00_axi_rdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_rdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_rresp" type="array">
+         <obj_property name="ElementShortName">s00_axi_rresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_rresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_rvalid" type="logic">
+         <obj_property name="ElementShortName">s00_axi_rvalid</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_rvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_rready" type="logic">
+         <obj_property name="ElementShortName">s00_axi_rready</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_rready</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group71" type="group">
+      <obj_property name="label">AXI_AddrWrite</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_awaddr" type="array">
+         <obj_property name="ElementShortName">s00_axi_awaddr[3:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_awaddr[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_awprot" type="array">
+         <obj_property name="ElementShortName">s00_axi_awprot[2:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_awprot[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_awvalid" type="logic">
+         <obj_property name="ElementShortName">s00_axi_awvalid</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_awvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_awready" type="logic">
+         <obj_property name="ElementShortName">s00_axi_awready</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_awready</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group73" type="group">
+      <obj_property name="label">AXI_DataWrite</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_wdata" type="array">
+         <obj_property name="ElementShortName">s00_axi_wdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_wdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_wstrb" type="array">
+         <obj_property name="ElementShortName">s00_axi_wstrb[3:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_wstrb[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_wvalid" type="logic">
+         <obj_property name="ElementShortName">s00_axi_wvalid</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_wvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_wready" type="logic">
+         <obj_property name="ElementShortName">s00_axi_wready</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_wready</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group74" type="group">
+      <obj_property name="label">AXI_Bchannel</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_bresp" type="array">
+         <obj_property name="ElementShortName">s00_axi_bresp[1:0]</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_bresp[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_bvalid" type="logic">
+         <obj_property name="ElementShortName">s00_axi_bvalid</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_bvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/s00_axi_bready" type="logic">
+         <obj_property name="ElementShortName">s00_axi_bready</obj_property>
+         <obj_property name="ObjectShortName">s00_axi_bready</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group107" type="group">
+      <obj_property name="label">UUT</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/DHT11AXI_tb/uut/slv_reg0" type="array">
+         <obj_property name="ElementShortName">slv_reg0[31:0]</obj_property>
+         <obj_property name="ObjectShortName">slv_reg0[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/slv_reg1" type="array">
+         <obj_property name="ElementShortName">slv_reg1[31:0]</obj_property>
+         <obj_property name="ObjectShortName">slv_reg1[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/slv_reg2" type="array">
+         <obj_property name="ElementShortName">slv_reg2[31:0]</obj_property>
+         <obj_property name="ObjectShortName">slv_reg2[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/slv_reg3" type="array">
+         <obj_property name="ElementShortName">slv_reg3[31:0]</obj_property>
+         <obj_property name="ObjectShortName">slv_reg3[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/reg_data_out" type="array">
+         <obj_property name="ElementShortName">reg_data_out[31:0]</obj_property>
+         <obj_property name="ObjectShortName">reg_data_out[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/slv_reg_wren" type="logic">
+         <obj_property name="ElementShortName">slv_reg_wren</obj_property>
+         <obj_property name="ObjectShortName">slv_reg_wren</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/slv_reg_rden" type="logic">
+         <obj_property name="ElementShortName">slv_reg_rden</obj_property>
+         <obj_property name="ObjectShortName">slv_reg_rden</obj_property>
+      </wvobject>
+      <wvobject fp_name="/DHT11AXI_tb/uut/wren_dly" type="logic">
+         <obj_property name="ElementShortName">wren_dly</obj_property>
+         <obj_property name="ObjectShortName">wren_dly</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

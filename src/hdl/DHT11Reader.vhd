@@ -17,6 +17,8 @@ entity DHT11Reader is
 	port (
 		-- Users to add ports here
         DataLine    : inout std_logic;
+        ck_io       : out std_logic_vector(11 downto 0);
+        ck_io_2     : out std_logic_vector(7 downto 0);
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -53,12 +55,17 @@ architecture arch_imp of DHT11Reader is
     signal reset:           std_logic;
     signal rd_tick:         std_logic;
     signal act_control:     std_logic_vector(1 downto 0);
-    signal act_status:      std_logic_vector(2 downto 0);
+    signal act_status:      std_logic_vector(3 downto 0);
     signal act_values:      std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     
     signal dhtInSig:        std_logic;
     signal dhtOutSig:       std_logic;
 
+    --debug values
+    signal dbg_rdy:         std_logic;
+    signal dbg_state:       std_logic_vector(2 downto 0);
+    signal dbg_reg:         std_logic_vector(31 downto 0);
+    
 	-- component declaration
 	component DHT11_S00_AXI is
 		generic (
@@ -75,7 +82,7 @@ architecture arch_imp of DHT11Reader is
 		-- Control port: AUTO, TRG
         U_CONTROL       : out std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error, DataValid
-        U_STATUS        : in std_logic_vector(2 downto 0);
+        U_STATUS        : in std_logic_vector(3 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature
@@ -104,6 +111,9 @@ architecture arch_imp of DHT11Reader is
 		S_AXI_RRESP	    : out std_logic_vector(1 downto 0);
 		S_AXI_RVALID	: out std_logic;
 		S_AXI_RREADY	: in std_logic
+		-- debug
+		;
+		dbg_reg: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
 		);
 	end component DHT11_S00_AXI;
 
@@ -120,7 +130,7 @@ component DHT11Wrapper is
 		-- control bits to start conversion and have automatic conversion every second
         U_CONTROL   : in std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error
-        U_STATUS    : out std_logic_vector(2 downto 0);
+        U_STATUS    : out std_logic_vector(3 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for temperature
         -- U_VALUES(15 downto 0):  16 bits for hunidity
@@ -133,6 +143,10 @@ component DHT11Wrapper is
 		-- feed through of DHT signals
         dhtInSig    : in std_logic;                           -- input line from DHT11
         dhtOutSig   : out std_logic                           -- output line to DHT11
+        -- debug outputs
+        ;
+        dbg_rdy     : out std_logic;
+        dbg_state   : out std_logic_vector(2 downto 0)
 	);
 end component DHT11Wrapper;
     
@@ -172,6 +186,9 @@ DHT11_S00_AXI_inst: DHT11_S00_AXI
 		S_AXI_RRESP	    => s00_axi_rresp,
 		S_AXI_RVALID	=> s00_axi_rvalid,
 		S_AXI_RREADY	=> s00_axi_rready
+		-- debug
+		,
+		dbg_reg         => dbg_reg
 	);
 
 	-- Add user logic here
@@ -191,6 +208,10 @@ dht11wrapper_inst: DHT11Wrapper
         U_RD_TICK   => rd_tick,
         dhtInSig    => dhtInSig,
         dhtOutSig   => dhtOutSig
+        -- debug
+        ,
+        dbg_rdy     => dbg_rdy,
+        dbg_state   => dbg_state
     );
 	
     reset <= not s00_axi_aresetn;
@@ -198,6 +219,15 @@ dht11wrapper_inst: DHT11Wrapper
     -- DHT11 bus signals
     dhtInSig <= DataLine;
     DataLine <= '0' when dhtOutSig = '0' else 'Z';
+
+    -- debug signals output
+    ck_io(0) <= wr_tick;
+    ck_io(1) <= rd_tick;
+    ck_io(2) <= dbg_rdy;
+    ck_io(5 downto 3) <= dbg_state;
+    ck_io(7 downto 6) <= act_control;
+    ck_io(11 downto 8) <= act_status;
+    ck_io_2(7 downto 0) <= dbg_reg(31 downto 24);
   
 	-- User logic ends
 
