@@ -59,10 +59,6 @@ entity DHT11Wrapper is
 		-- feed through of DHT signals
         dhtInSig    : in std_logic;                           -- input line from DHT11
         dhtOutSig   : out std_logic                           -- output line to DHT11
-        -- debug outputs
-        ;
-        dbg_rdy     : out std_logic;
-        dbg_state   : out std_logic_vector(2 downto 0)
 	);
 end DHT11Wrapper;
 
@@ -115,11 +111,16 @@ architecture Behavioral of DHT11Wrapper is
 --    attribute mark_debug : string;
 --    attribute mark_debug of trg: signal is "true";
 --    attribute mark_debug of rdy: signal is "true";
---    attribute mark_debug of cntTick: signal is "true";
---    attribute mark_debug of cntDone: signal is "true";
---    attribute mark_debug of actCount: signal is "true";
+----    attribute mark_debug of cntTick: signal is "true";
+----    attribute mark_debug of cntDone: signal is "true";
+----    attribute mark_debug of actCount: signal is "true";
 --    attribute mark_debug of stSmplStateReg: signal is "true";
 --    attribute mark_debug of rdy_status: signal is "true";
+--    attribute mark_debug of U_WR_TICK: signal is "true";
+--    attribute mark_debug of U_RD_TICK: signal is "true";
+--    attribute mark_debug of U_CONTROL: signal is "true";
+--    attribute mark_debug of U_STATUS: signal is "true";
+--    attribute mark_debug of U_VALUES: signal is "true";
     
     component DHT11Control
         generic (
@@ -301,7 +302,4 @@ begin
         );
     U_RD_TICK <= dav_r_tick or dav_r_tick or rdy_r_tick or rdy_f_tick;
 
-    -- debug assignments
-    dbg_rdy <= rdy;
-    dbg_state <= std_logic_vector(to_unsigned(t_stSmplState'POS(stSmplStateReg), 3));
 end Behavioral;

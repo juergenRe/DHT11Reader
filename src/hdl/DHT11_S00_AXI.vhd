@@ -91,9 +91,6 @@ entity DHT11_S00_AXI is
 		-- Read ready. This signal indicates that the master can
     		-- accept the read data and response information.
 		S_AXI_RREADY	: in std_logic
-		-- debug
-		;
-		dbg_reg: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
 	);
 end DHT11_S00_AXI;
 
@@ -133,6 +130,12 @@ architecture arch_imp of DHT11_S00_AXI is
 	signal aw_en	: std_logic;
 	
 	signal wren_dly: std_logic;
+
+    -- debug attributes
+--    attribute mark_debug : string;
+--    attribute mark_debug of reg_data_out: signal is "true";
+--    attribute mark_debug of axi_araddr: signal is "true";
+--    attribute mark_debug of axi_rvalid: signal is "true";
 
 begin
     -- user signal assignments
@@ -441,7 +444,5 @@ begin
       end if; 
     end process rd_tick_gen;
 	-- User logic ends
-    -- debug
-    dbg_reg <= reg_data_out;
     
 end arch_imp;
