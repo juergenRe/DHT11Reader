@@ -45,8 +45,8 @@ entity DHT11Wrapper is
 	    reset       : in std_logic;
 		-- control bits to start conversion and have automatic conversion every second: Auto Sample, Start
         U_CONTROL   : in std_logic_vector(1 downto 0);
-        --  Status bits: Ready, DataAvail, Short circuit, Error
-        U_STATUS    : out std_logic_vector(3 downto 0);
+        --  Status bits: 7:4: Error code; 3: unused; 2: Rdy 1: Data avail; 0: Error bit
+        U_STATUS    : out std_logic_vector(7 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature 
@@ -78,12 +78,11 @@ architecture Behavioral of DHT11Wrapper is
     -- feed through of DHT pins
     signal dhtInSignal:     std_logic;
     signal dhtOutSignal:    std_logic;
-    signal outT:            std_logic_vector(15 downto 0);      -- temperature
-    signal outH:            std_logic_vector(15 downto 0);      -- humidity
-    signal outStatus:       std_logic_vector(2 downto 0);       -- status: [2]: sample available; [1]: short circuit; [0]: error
+    signal outData:         std_logic_vector(31 downto 0);      -- temperature
+    signal outErr:          std_logic_vector(3 downto 0);       -- status: [2]: sample available; [1]: short circuit; [0]: error
+    signal errBit:          std_logic;
     
     signal cfg_tick:        std_logic;
---    signal done_tick:       std_logic;
     signal dav_r_tick:      std_logic;
     signal dav_f_tick:      std_logic;
     signal dav_status:      std_logic;
@@ -131,9 +130,8 @@ architecture Behavioral of DHT11Wrapper is
             clk:            in std_logic;
             reset:          in std_logic;
             cntTick:        out std_logic;                          -- counter tick
-            outT:           out std_logic_vector(15 downto 0);      -- temperature out
-            outH:           out std_logic_vector(15 downto 0);      -- humidity out
-            outStatus:      out std_logic_vector(2 downto 0);       -- status out: [2]: sample available; [1]: short circuit; [0]: error
+            outData:        out std_logic_vector(31 downto 0);      -- sampled data values
+            outErr:         out std_logic_vector(3 downto 0);       -- detailed error code
             trg:            in std_logic;                           -- new settings trigger
             rdy:            out std_logic;                          -- component ready to receive new settings
             dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -174,9 +172,8 @@ begin
             clk         => clk,     
             reset       => reset,
             cntTick     => cntTick,
-            outT        => outT,
-            outH        => outH,
-            outStatus   => outStatus,
+            outData     => outData,
+            outErr      => outErr,
             trg         => trg,
             rdy         => rdy,
             dhtInSig    => dhtInSignal,
@@ -184,8 +181,10 @@ begin
          );
     dhtInSignal <= dhtInSig;
     dhtOutSig <= dhtOutSignal;
-    U_STATUS <= rdy_status & outStatus;
-    U_VALUES <= outH & outT;
+    
+    errBit <= outErr(3) or outErr(2) or outErr(1) or outErr(0);
+    U_STATUS <= outErr & '0' & rdy_status & dav_status & errBit;
+    U_VALUES <= outData;
 
     -- 1s delay counter for power on and waiting time after a sample
     dly_inst: mod_m_counter

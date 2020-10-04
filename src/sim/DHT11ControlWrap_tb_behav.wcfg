@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="58007815600000fs"></ZoomStartTime>
-      <ZoomEndTime time="58008166400001fs"></ZoomEndTime>
-      <Cursor1Time time="58008375000000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="337465706fs"></ZoomEndTime>
+      <Cursor1Time time="1022385000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="295"></NameColumnWidth>
+      <NameColumnWidth column_width="271"></NameColumnWidth>
       <ValueColumnWidth column_width="116"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="18" />
+   <WVObjectSize size="25" />
    <wave_markers>
       <marker time="15000000" label="" />
       <marker time="16895365000000" label="" />
@@ -37,8 +37,8 @@
       <obj_property name="ObjectShortName">U_CONTROL[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_tb/U_STATUS" type="array">
-      <obj_property name="ElementShortName">U_STATUS[2:0]</obj_property>
-      <obj_property name="ObjectShortName">U_STATUS[2:0]</obj_property>
+      <obj_property name="ElementShortName">U_STATUS[7:0]</obj_property>
+      <obj_property name="ObjectShortName">U_STATUS[7:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_tb/U_VALUES" type="array">
       <obj_property name="ElementShortName">U_VALUES[31:0]</obj_property>
@@ -68,10 +68,6 @@
       <obj_property name="ElementShortName">int_reset</obj_property>
       <obj_property name="ObjectShortName">int_reset</obj_property>
    </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_tb/uut/firstSampleDone" type="logic">
-      <obj_property name="ElementShortName">firstSampleDone</obj_property>
-      <obj_property name="ObjectShortName">firstSampleDone</obj_property>
-   </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_tb/uut/stSmplStateReg" type="other">
       <obj_property name="ElementShortName">stSmplStateReg</obj_property>
       <obj_property name="ObjectShortName">stSmplStateReg</obj_property>
@@ -92,8 +88,40 @@
       <obj_property name="label">DHT11Control</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dht11Control_inst/trg" type="logic">
+      <obj_property name="ElementShortName">trg</obj_property>
+      <obj_property name="ObjectShortName">trg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dht11Control_inst/rdy" type="logic">
+      <obj_property name="ElementShortName">rdy</obj_property>
+      <obj_property name="ObjectShortName">rdy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dht11Control_inst/outData" type="array">
+      <obj_property name="ElementShortName">outData[31:0]</obj_property>
+      <obj_property name="ObjectShortName">outData[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dht11Control_inst/outErr" type="array">
+      <obj_property name="ElementShortName">outErr[3:0]</obj_property>
+      <obj_property name="ObjectShortName">outErr[3:0]</obj_property>
+   </wvobject>
    <wvobject type="divider" fp_name="divider136">
       <obj_property name="label">ModMCnt</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/testStateAct" type="other">
+      <obj_property name="ElementShortName">testStateAct</obj_property>
+      <obj_property name="ObjectShortName">testStateAct</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/testCnt" type="array">
+      <obj_property name="ElementShortName">testCnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">testCnt[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/startTest" type="logic">
+      <obj_property name="ElementShortName">startTest</obj_property>
+      <obj_property name="ObjectShortName">startTest</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/testDone" type="logic">
+      <obj_property name="ElementShortName">testDone</obj_property>
+      <obj_property name="ObjectShortName">testDone</obj_property>
    </wvobject>
 </wave_config>
