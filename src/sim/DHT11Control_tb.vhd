@@ -48,9 +48,8 @@ signal reset:           std_logic := '0';
 -- inputs to DHT11Reader block
 constant NDIV:          integer := 99;
 
-signal outT:           std_logic_vector(15 downto 0);      -- temperature
-signal outH:           std_logic_vector(15 downto 0);      -- humidity
-signal outStatus:      std_logic_vector(2 downto 0);       -- status: [1]: sample available; [0]: error
+signal outData:        std_logic_vector(31 downto 0);      -- data value
+signal outErr:         std_logic_vector(3 downto 0);       -- error code
 signal rdy:            std_logic;                          -- component ready to receive new settings
 signal dhtOutSig:      std_logic;                          -- driver line to DHT11
 
@@ -65,8 +64,7 @@ signal testDone:        std_logic;
 signal testCnt:         unsigned(4 downto 0);       -- holds the current test index
 
 ----------------------------------------------------------------
-signal expectResult:    boolean;
-signal expectSC:        boolean;
+signal expectErr:       integer;
 
 ----------------------------------------
 component DHT11Control
@@ -78,9 +76,8 @@ component DHT11Control
         clk:            in std_logic;
         reset:          in std_logic;
         cntTick:        out std_logic;                          -- counter tick
-        outT:           out std_logic_vector(15 downto 0);      -- temperature out
-        outH:           out std_logic_vector(15 downto 0);      -- humidity out
-        outStatus:      out std_logic_vector(2 downto 0);       -- status out: [1]: sample available; [0]: error
+        outData:        out std_logic_vector(31 downto 0);      -- sampled data values
+        outErr:         out std_logic_vector(3 downto 0);       -- detailed error code
         trg:            in std_logic;                           -- new settings trigger
         rdy:            out std_logic;                          -- component ready to receive new settings
         dhtInSig:       in std_logic;                           -- input line from DHT11
@@ -124,9 +121,8 @@ begin
             clk         => clk,     
             reset       => reset,
             cntTick     => open,
-            outT        => outT,
-            outH        => outH,
-            outStatus   => outStatus,
+            outData     => outData,
+            outErr      => outErr,
             trg         => trg,
             rdy         => rdy,
             dhtInSig    => dhtInSig,
@@ -206,12 +202,10 @@ begin
     dht11_test_pattern_nxt: process(testStateReg, startTest, rdy)
         variable actIdx:    integer := 0;
         variable dataVal:   std_logic_vector(31 downto 0);
-        variable er:        boolean;
-        variable sc:        boolean;
+        variable errC:      integer;
         variable desc:      string(1 to 40);
         variable res:       integer;
-        variable stat:      boolean;
-        variable statsc:    boolean;
+        variable errCode:   integer;
         variable t0, t1, t2, t3, t4, t5, t6: time;
         
         procedure setTiming(t0, t1, t2, t3, t4, t5, t6: in time) is
@@ -236,11 +230,10 @@ begin
                 end if;
             when stTestSetUp =>
                 testCnt <= TO_UNSIGNED(actIdx, 5);
-                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, er, sc, desc);
+                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, errC, desc);
                 setTiming(t0, t1, t2, t3, t4, t5, t6);
                 txData <= dataVal & calc_crc(dataVal);
-                expectResult <= er;
-                expectSC <= sc;
+                expectErr <= errC;
                 wrOut("---------------------------------------------");
                 wrOut("Start Test: " & desc);
                 testStateNxt <= stTestStart;
@@ -253,16 +246,12 @@ begin
             when stTestRun => 
                 -- executing reception, wait till finished
                 if rdy = '1' then
-                    res := conv_integer(outH & outT);
-                    stat := (outStatus(0) = '1');
-                    statsc := (outStatus(1) = '1');
-                    assert not (er xor stat)
-                        report "Expected status unequal expect=" & boolean'image(er) & " => measured=" & boolean'image(stat) severity error;
+                    res := conv_integer(outdata);
+                    errCode := conv_integer(outErr);
+                    assert (errC = errCode)
+                        report "Expected status unequal expect=" & integer'image(errC) & " => measured=" & integer'image(errCode) severity error;
                         
-                    assert not (sc xor statsc)
-                        report "Expected error status unequal: expect=" & boolean'image(sc) & " => measured=" & boolean'image(statsc) severity error;
-                        
-                    if not stat then
+                    if errCode = 0 then
                         assert res = conv_integer(dataVal)
                             report "Expected data values unequal data=" & integer'image(conv_integer(dataVal)) & " => outH/T: " & integer'image(res) severity error;
                     end if;
