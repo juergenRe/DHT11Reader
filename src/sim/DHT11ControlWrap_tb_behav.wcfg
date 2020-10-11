@@ -11,18 +11,20 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="337465706fs"></ZoomEndTime>
-      <Cursor1Time time="1022385000000fs"></Cursor1Time>
+      <ZoomStartTime time="16896353761554fs"></ZoomStartTime>
+      <ZoomEndTime time="16896661192231fs"></ZoomEndTime>
+      <Cursor1Time time="16896405000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="271"></NameColumnWidth>
-      <ValueColumnWidth column_width="116"></ValueColumnWidth>
+      <ValueColumnWidth column_width="108"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="27" />
    <wave_markers>
       <marker time="15000000" label="" />
       <marker time="16895365000000" label="" />
+      <marker time="66476445000000" label="" />
+      <marker time="16896405000000" label="" />
    </wave_markers>
    <wvobject fp_name="/DHT11ControlWrap_tb/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
@@ -79,6 +81,14 @@
    <wvobject fp_name="/DHT11ControlWrap_tb/uut/cfg_tick" type="logic">
       <obj_property name="ElementShortName">cfg_tick</obj_property>
       <obj_property name="ObjectShortName">cfg_tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/rdy_status" type="logic">
+      <obj_property name="ElementShortName">rdy_status</obj_property>
+      <obj_property name="ObjectShortName">rdy_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/dav_status" type="logic">
+      <obj_property name="ElementShortName">dav_status</obj_property>
+      <obj_property name="ObjectShortName">dav_status</obj_property>
    </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_tb/uut/actControl" type="array">
       <obj_property name="ElementShortName">actControl[1:0]</obj_property>
