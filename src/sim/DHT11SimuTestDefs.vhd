@@ -74,6 +74,7 @@ signal t_startH:        time;
 signal t_bitL:          time;
 signal t_bitH0:         time;
 signal t_bitH1:         time;
+signal b_chk:           std_logic;
 
 
 -- Test Data definiton
@@ -81,6 +82,7 @@ constant NB_TIMES:      natural := 7;
 type t_timing_ary is array (natural range <>) of time;
 type t_testdata is record
       timings   : t_timing_ary(0 to NB_TIMES-1);	-- timing array
+      b_chk     : std_logic;                        -- provoke checksum error
 	  data	    : std_logic_vector(31 downto 0); 	-- data to transmit
 	  expectRes	: integer;						    -- expected result
 	  desc      : string(1 to 40);                  -- description string
@@ -96,6 +98,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_OK,
       desc      => "<0> Good timings A                      "),
@@ -107,6 +110,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"00000000",
       expectRes => ERR_OK,
       desc      => "<1> Good timings B                      "),
@@ -118,6 +122,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"FFFFFFFF",
       expectRes => ERR_OK,
       desc      => "<2> Good timings C                      "),
@@ -129,6 +134,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_NoDevice,
       desc      => "<3> Wake up too long                    "),
@@ -140,6 +146,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_DHTStartBit,
       desc      => "<4> Start bit DHT too short             "),
@@ -151,6 +158,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_DHTStartBit,
       desc      => "<5> Start bit DHT too long              "),
@@ -162,6 +170,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_DHTStartBit,
       desc      => "<6> Start bit DHT High too short        "),
@@ -173,6 +182,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_DHTStartBit,
       desc      => "<7> Start bit DHT High too long         "),
@@ -184,6 +194,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL - TVAR_BITL_MN - TD_ERROR,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxLow,
       desc      => "<8> TX Bit low too short                "),
@@ -195,6 +206,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL + TVAR_BITL_MX + TD_ERROR,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxLow,
       desc      => "<9> TX Bit low too long                 "),
@@ -206,6 +218,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0 - TVAR_BITH0_MN - TD_ERROR,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxHigh,
       desc      => "<10> TX Bit High too short for '0'      "),
@@ -218,6 +231,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0 + TVAR_BITH0_MX + TD_ERROR,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxHigh,
       desc      => "<11> TX Bit High too long for '0'       "),
@@ -230,6 +244,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1 - TVAR_BITH1_MN - TD_ERROR),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxHigh,
       desc      => "<12> TX Bit High too short for '1'      "),
@@ -242,6 +257,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1 + TVAR_BITH1_MX + TD_ERROR),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxHigh,
       desc      => "<13> TX Bit High too long for '1'       "),
@@ -253,6 +269,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_OK,
       desc      => "<14> Good timings A (repeat)            "),
@@ -264,6 +281,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_SC,
       desc      => "<15> Excess start bit L                 "),
@@ -275,6 +293,7 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_DHTStartBit,
       desc      => "<16> Excess start bit H                 "),
@@ -286,6 +305,7 @@ constant test_data : t_test_ary := (
                      4 => TEXCESSTIME,  
                      5 => TBITH0,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxTOL,
       desc      => "<17> Excess Tx bit L                    "),
@@ -297,9 +317,22 @@ constant test_data : t_test_ary := (
                      4 => TBITL,  
                      5 => TEXCESSTIME,  
                      6 => TBITH1),
+      b_chk     => '0',
       data      => x"5577AA33",
       expectRes => ERR_TxTOH,
-      desc      => "<18> Excess Tx bit H                    ")
+      desc      => "<18> Excess Tx bit H                    "),
+    19      => (            -- simulate checksumm error
+      timings   => ( 0 => TSTRTIN,
+                     1 => TWAKE,
+                     2 => TSTRTL,  
+                     3 => TSTRTH,  
+                     4 => TBITL,  
+                     5 => TBITH0,  
+                     6 => TBITH1),
+      b_chk     => '1',
+      data      => x"5577AA33",
+      expectRes => ERR_ChkSum,
+      desc      => "<19> Checksum error                     ")
       --           "0123456789012345678901234567890123456789"
       ); 
   
@@ -314,6 +347,7 @@ constant test_data : t_test_ary := (
                          t_bitL: out time; 
                          t_bitH0: out time; 
                          t_bitH1: out time; 
+                         bchk: out std_logic;
                          expectResult: out integer; 
                          desc: out string);
 
@@ -336,6 +370,7 @@ package body DHT11SimuTestDefs is
                              t_bitL: out time; 
                              t_bitH0: out time; 
                              t_bitH1: out time; 
+                             bchk: out std_logic;
                              expectResult: out integer; 
                              desc: out string) is
         begin
@@ -347,6 +382,7 @@ package body DHT11SimuTestDefs is
             t_bitL   := test_data(idx).timings(4);
             t_bitH0  := test_data(idx).timings(5);
             t_bitH1  := test_data(idx).timings(6);
+            bchk     := test_data(idx).b_chk;
             expectResult := test_data(idx).expectRes;
             desc := test_data(idx).desc;
         end getActData;

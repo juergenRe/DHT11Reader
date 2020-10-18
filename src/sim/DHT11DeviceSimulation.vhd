@@ -30,6 +30,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
+use work.DHT11SimuTestDefs.ALL;
 
 entity DHT11DeviceSimulation is
     generic (
@@ -48,6 +49,7 @@ entity DHT11DeviceSimulation is
         t_bitL:         in time;
         t_bitH0:        in time;
         t_bitH1:        in time;
+        b_chksumErr:    in std_logic;
         txData:         in std_logic_vector(NDATABIT-1 downto 0)
      );
 end DHT11DeviceSimulation;
@@ -62,6 +64,7 @@ type t_dhtState is (  stPowOn, stIdle,
                         stTxBitLow, stTxBitHigh1, stTxBitHigh0);
 signal dhtState:    t_dhtState;
 signal txDebug:     std_logic_vector(NDATABIT+8 downto 0) := (others => '0');
+signal actBit:      integer;
 
 begin
 
@@ -83,7 +86,13 @@ dht11simu_proc: process
                     dhtState <= stIdle;
                 when stIdle =>
                     wait until dhtOutSig = '0';
-                    bitcnt := 39;
+                    -- don't send all bits when checking for excess times
+                    -- otherwise the tested process will get out of sync
+                    if t_bitL = TEXCESSTIME or t_bitH0 = TEXCESSTIME then
+                        bitcnt := 1;
+                    else
+                        bitcnt := 39;
+                    end if;
                     dhtState <= stRcvStartBit;
                 when stRcvStartBit =>
                     wait for t_trigin;  
@@ -105,14 +114,23 @@ dht11simu_proc: process
                     dhtState <= stTxBitLow;
                 when stTxBitLow =>
                     wait for t_bitL;
+                    actBit <= bitCnt;
                     if bitcnt >= 0 then
                         txBit := txData(bitcnt);
                         txDebug(bitcnt) <= '1';
                         bitcnt := bitcnt -1;
-                        if txBit = '0' then
-                            dhtState <= stTxBitHigh0;
+                        if bitcnt = 38 and b_chksumErr = '1' then     -- simulate a checksum error 
+                            if txBit = '1' then
+                                dhtState <= stTxBitHigh0;
+                            else
+                                dhtState <= stTxBitHigh1;
+                            end if;
                         else
-                            dhtState <= stTxBitHigh1;
+                            if txBit = '0' then
+                                dhtState <= stTxBitHigh0;
+                            else
+                                dhtState <= stTxBitHigh1;
+                            end if;
                         end if;
                     else
                         dhtState <= stIdle;

@@ -64,7 +64,7 @@ signal dhtOutSig:       std_logic;
 
 signal actStatus:       std_logic_vector(7 downto 0);
 signal expectErr:       integer;
-
+signal b_chksumErr:     std_logic;
 signal outErr:          std_logic_vector(3 downto 0);       -- error code
 
 type t_testState is (stPowOn, stForceReset, stIdle, stTestSetUp, stTestStart, stTestAssertStart, stTestRun, stTestEnd);
@@ -127,6 +127,7 @@ component DHT11DeviceSimulation is
         t_bitL:         in time;
         t_bitH0:        in time;
         t_bitH1:        in time;
+        b_chksumErr:    in std_logic;
         txData:         in std_logic_vector(NDATABIT-1 downto 0)
      );
 end component;
@@ -204,6 +205,7 @@ dht11_dvc: DHT11DeviceSimulation
         t_bitL      => t_bitL, 
         t_bitH0     => t_bitH0,
         t_bitH1     => t_bitH1,  
+        b_chksumErr => b_chksumErr,
         txData      => txData    
      );           	
     outErr <= U_STATUS(7 downto 4);     -- extract error code
@@ -244,11 +246,13 @@ dht11_dvc: DHT11DeviceSimulation
         variable actIdx:    integer := 0;
         variable dataVal:   std_logic_vector(31 downto 0);
         variable errC:      integer;
+        variable errBit:    std_logic;
         variable desc:      string(1 to 40);
         variable res:       integer;
         variable errCode:   integer;
         variable stat:      std_logic_vector(7 downto 0);
         variable t0, t1, t2, t3, t4, t5, t6: time;
+        variable bchk:      std_logic;
         variable testStateReg: t_testState := stPowOn;
         variable testStateNxt: t_testState := stPowOn;
         
@@ -265,13 +269,13 @@ dht11_dvc: DHT11DeviceSimulation
         -- set timing parameters for DHT11 simulation
         procedure setTiming(t0, t1, t2, t3, t4, t5, t6: in time) is
         begin
-            t_trigin <= t0; 
-            t_wakeup <= t1; 
-            t_startL <= t2;
-            t_startH <= t3;
-            t_bitL   <= t4;
-            t_bitH0  <= t5;
-            t_bitH1  <= t6;
+            t_trigin    <= t0; 
+            t_wakeup    <= t1; 
+            t_startL    <= t2;
+            t_startH    <= t3;
+            t_bitL      <= t4;
+            t_bitH0     <= t5;
+            t_bitH1     <= t6;
         end;
     begin
         wait until rising_edge(clk);
@@ -304,9 +308,15 @@ dht11_dvc: DHT11DeviceSimulation
                 end if;
             when stTestSetUp =>
                 testCnt <= TO_UNSIGNED(actIdx, 5);
-                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, errC, desc);
+                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, bchk, errC, desc);
                 setTiming(t0, t1, t2, t3, t4, t5, t6);
+                b_chksumErr <= bchk;
                 txData <= dataVal & calc_crc(dataVal);
+                if errC > ERR_OK then
+                    errBit := '1';
+                else
+                    errbit := '0';
+                end if;
                 expectErr <= errC;
                 wrOut("---------------------------------------------");
                 wrOut("Start Test: " & desc);
@@ -327,8 +337,8 @@ dht11_dvc: DHT11DeviceSimulation
                 -- executing reception, wait till finished
                 waitForStatusChng(stat, BIT_DAV, '1', 0ns);
                 actStatus <= stat;
-                assert (actStatus and x"07") = x"02"
-                    report "Act status must have DAV only set: expect=2 => measured=" & integer'image(conv_integer(stat)) severity error;
+                assert (stat and x"07") = "01" & errBit
+                    report "Act status RDY/ERR unexpected: expect=" & integer'image(conv_integer("01" & errBit)) & " => measured=" & integer'image(conv_integer(stat)) severity error;
                     
                 waitForStatusChng(stat, BIT_RDY, '1', 0ns); 
                 res := conv_integer(U_VALUES);

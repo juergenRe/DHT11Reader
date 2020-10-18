@@ -299,6 +299,6 @@ begin
             tick_rise   => rdy_r_tick,
             tick_fall   => rdy_f_tick
         );
-    U_RD_TICK <= dav_r_tick or dav_r_tick or rdy_r_tick or rdy_f_tick;
+    U_RD_TICK <= dav_r_tick or dav_f_tick or rdy_r_tick or rdy_f_tick;
 
 end Behavioral;

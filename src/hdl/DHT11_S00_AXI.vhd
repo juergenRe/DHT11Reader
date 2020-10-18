@@ -20,7 +20,7 @@ entity DHT11_S00_AXI is
 		-- Control port: AUTO, TRG
         U_CONTROL   : out std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error, DataValid
-        U_STATUS    : in std_logic_vector(3 downto 0);
+        U_STATUS    : in std_logic_vector(7 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature
@@ -419,7 +419,7 @@ begin
 	    else
 	      if U_RD_TICK = '1' then
             slv_reg0 <= U_VALUES;
-            slv_reg1(3 downto 0) <= U_STATUS;
+            slv_reg1(7 downto 0) <= U_STATUS;
             slv_reg1(C_S_AXI_DATA_WIDTH-1 downto 4) <= slv_reg1(C_S_AXI_DATA_WIDTH-1 downto 4);  
           else
             slv_reg0 <= slv_reg0;

@@ -53,7 +53,7 @@ architecture arch_imp of DHT11Reader is
     signal reset:           std_logic;
     signal rd_tick:         std_logic;
     signal act_control:     std_logic_vector(1 downto 0);
-    signal act_status:      std_logic_vector(3 downto 0);
+    signal act_status:      std_logic_vector(7 downto 0);
     signal act_values:      std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     
     signal dhtInSig:        std_logic;
@@ -75,7 +75,7 @@ architecture arch_imp of DHT11Reader is
 		-- Control port: AUTO, TRG
         U_CONTROL       : out std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error, DataValid
-        U_STATUS        : in std_logic_vector(3 downto 0);
+        U_STATUS        : in std_logic_vector(7 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature
@@ -120,7 +120,7 @@ component DHT11Wrapper is
 		-- control bits to start conversion and have automatic conversion every second
         U_CONTROL   : in std_logic_vector(1 downto 0);
         --  Status bits: Ready, Error
-        U_STATUS    : out std_logic_vector(3 downto 0);
+        U_STATUS    : out std_logic_vector(7 downto 0);
         -- measured values:
         -- U_VALUES(31 downto 16): 16 bits for temperature
         -- U_VALUES(15 downto 0):  16 bits for hunidity
