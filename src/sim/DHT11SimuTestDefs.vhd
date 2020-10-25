@@ -87,7 +87,38 @@ type t_testdata is record
 	  expectRes	: integer;						    -- expected result
 	  desc      : string(1 to 40);                  -- description string
 end record;
+type t_trgdata is record
+    d_trg       : std_logic_vector(1 downto 0);     -- setting to trigger a conversion when everyting is ready
+    d_smpl      : std_logic_vector(1 downto 0);     -- setting after conversion has started
+    d_off       : std_logic_vector(1 downto 0);     -- setting to stop everything after n passes
+    desc        : string(1 to 20);
+end record;
 type t_test_ary is array (natural range <>) of t_testdata;
+type t_trg_ary is array (natural range <>) of t_trgdata;
+
+constant trg_data: t_trg_ary := (
+    0       => ( -- standard one shot with reset by driver
+      d_trg     => "01",
+      d_smpl    => "00",
+      d_off     => "00",
+      desc      => "One shot [drv]      "),
+    1       => ( -- standard one shot with rest by component
+      d_trg     => "01",
+      d_smpl    => "01",
+      d_off     => "00",
+      desc      => "One shot [comp]     "),
+    2       => ( -- standard one shot with rest be app
+      d_trg     => "11",
+      d_smpl    => "10",
+      d_off     => "00",
+      desc      => "Auto [once]         "),
+    3       => ( -- standard one shot with rest be app
+      d_trg     => "11",
+      d_smpl    => "11",
+      d_off     => "00",
+      desc      => "Auto [cont]         ")
+--                  12345678901234567890
+);
 
 constant test_data : t_test_ary := (
     0       => (            -- good timing
@@ -361,6 +392,17 @@ package body DHT11SimuTestDefs is
 		    crc := data(31 downto 24) + data(23 downto 16) + data(15 downto 8) + data(7 downto 0);
 		    return crc;
 		end calc_crc;
+		
+		function test_data_length return natural is
+		begin
+		    return test_data'length;
+		end test_data_length;
+		
+		function trg_data_length return natural is
+		begin
+		    return trg_data'length;
+		end trg_data_length;
+
         procedure getActData(idx: in natural; 
                              dx: out std_logic_vector;
                              t_trigin: out time; 
@@ -386,4 +428,17 @@ package body DHT11SimuTestDefs is
             expectResult := test_data(idx).expectRes;
             desc := test_data(idx).desc;
         end getActData;
+
+        procedure getActTrigger(idx: in natural;
+                                trgStart: out std_logic_vector; 
+                                trgSmpl: out std_logic_vector; 
+                                trgEnd: out std_logic_vector; 
+                                desc: out string) is
+        begin
+            trgStart := trg_data(idx).d_trg;
+            trgSmpl := trg_data(idx).d_smpl;
+            trgEnd := trg_data(idx).d_off;
+            desc := trg_data(idx).desc;
+        end getActTrigger;
+
 end DHT11SimuTestDefs;

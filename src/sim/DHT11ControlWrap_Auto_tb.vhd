@@ -2,14 +2,14 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 07/29/2020 12:22:19 PM
+-- Create Date: 10/25/2020 02:45:00 PM
 -- Design Name: 
--- Module Name: DHT11ControlWrap_tb - Behavioral
+-- Module Name: DHT11ControlWrap_Auto_tb - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
 -- Description: 
---   Simulates DHT11Wrapper with all test cases in single shot mode 
+--   Simulates DHT11Wrapper with specific test cases for auto sample mode 
 -- Dependencies: 
 -- 
 -- Revision:
@@ -35,13 +35,16 @@ use work.DHT11SimuTestDefs.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity DHT11ControlWrap_tb is
-end DHT11ControlWrap_tb;
+entity DHT11ControlWrap_Auto_tb is
+--  Port ( );
+end DHT11ControlWrap_Auto_tb;
 
-architecture Behavioral of DHT11ControlWrap_tb is
+architecture Behavioral of DHT11ControlWrap_Auto_tb is
+
    -- Clock period definitions
 constant clk_period:    time := 10 ns;
 constant C_S_AXI_DATA_WIDTH:    integer := 32;
+constant MAXAUTO: integer := 10;
 
    --internal signals
 signal clk:             std_logic := '0';
@@ -67,7 +70,7 @@ signal expectErr:       integer;
 signal b_chksumErr:     std_logic;
 signal outErr:          std_logic_vector(3 downto 0);       -- error code
 
-type t_testState is (stPowOn, stForceReset, stIdle, stTestSetUp, stTestStart, stTestAssertStart, stTestRun, stTestEnd);
+type t_testState is (stPowOn, stForceReset, stTimingSetUp, stIdle, stTestSetUp, stTestStart, stTestAssertStart, stTestRun, stTestIterate, stTestEnd);
 signal testStateAct:    t_testState;
 --signal testStateNxt:    t_testState;
 signal startTest:       std_logic;
@@ -239,11 +242,10 @@ dht11_dvc: DHT11DeviceSimulation
 		wait for 1ms;
 		assert false report "Simulation done" severity failure;
 	end process;
-	
-----------------------------------------------------------------------------------
-    
+
     dht11_test_pattern_nxt: process   
         variable actIdx:    integer := 0;
+        variable actCnt:    integer := 0;
         variable dataVal:   std_logic_vector(31 downto 0);
         variable errC:      integer;
         variable errBit:    std_logic;
@@ -253,9 +255,9 @@ dht11_dvc: DHT11DeviceSimulation
         variable stat:      std_logic_vector(7 downto 0);
         variable t0, t1, t2, t3, t4, t5, t6: time;
         variable bchk:      std_logic;
+        variable trgStart, trgSmpl, trgEnd: std_logic_vector(1 downto 0);
         variable testStateReg: t_testState := stPowOn;
         variable testStateNxt: t_testState := stPowOn;
-        
         -- trigger change on U_CONTROL
         procedure setControlReg(value: in std_logic_vector) is
         begin
@@ -288,27 +290,13 @@ dht11_dvc: DHT11DeviceSimulation
                 testCnt <= (others => '0');
                 waitForStatusChng(stat, BIT_RDY, '1', 0ns);
                 actStatus <= stat;
-                testStateNxt := stForceReset;
-            when stForceReset =>
-                wait for 200 ns;
-                -- apply reset & wait till ready
-                reset <= '1';
-                wait for 100ns;
-                reset <= '0';
-        
-                waitForStatusChng(stat, BIT_RDY, '1', 0ns);
-                actStatus <= stat;
-                wait for 200 ns;
                 testStateNxt := stIdle;
             when stIdle =>
-                actIdx := 0;
-                testDone <= '1';
                 if startTest = '1' then
                     testStateNxt := stTestSetUp;
                 end if;
-            when stTestSetUp =>
-                testCnt <= TO_UNSIGNED(actIdx, 5);
-                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, bchk, errC, desc);
+            when stTimingSetUp =>
+                getActData(0, dataVal, t0, t1, t2, t3, t4, t5, t6, bchk, errC, desc);
                 setTiming(t0, t1, t2, t3, t4, t5, t6);
                 b_chksumErr <= bchk;
                 txData <= dataVal & calc_crc(dataVal);
@@ -318,16 +306,23 @@ dht11_dvc: DHT11DeviceSimulation
                     errbit := '0';
                 end if;
                 expectErr <= errC;
+            when stTestSetUp =>
+                actCnt := 0;
+                testCnt <= TO_UNSIGNED(actCnt, 5);
+                getActTrigger(actIdx, trgStart, trgSmpl, trgEnd, desc);
                 wrOut("---------------------------------------------");
-                wrOut("Start Test: " & desc);
+                wrOut("Start Mode Test: " & desc);
                 testStateNxt := stTestStart;
             when stTestStart =>
-                -- initiate a sample
-                setControlReg("01");
+                -- initiate a sample 
+                setControlReg(trgStart);
                 waitForStatusChng(stat, BIT_RDY, '0', 0ns);
-                setControlReg("00");
+                setControlReg(trgSmpl);
                 testStateNxt := stTestAssertStart;
             when stTestAssertStart =>
+                testCnt <= TO_UNSIGNED(actCnt, 5);
+                wrOut("---------------------------------------------");
+                wrOut("   Test #" & integer'image(actCnt));
                 tt0 <= now;
                 waitForStatusChng(stat, BIT_DAV, '0', 1100ns);
                 assert (now - tt0) < 1100ns
@@ -352,15 +347,33 @@ dht11_dvc: DHT11DeviceSimulation
                 end if;
 
                 testStateNxt := stTestSetUp;
+                actCnt := actCnt + 1;
+                if actCnt = MAXAUTO then
+                    testStateNxt := stTestIterate;
+                else
+                    testStateNxt := stTestStart;
+                end if;
+            when stTestIterate =>
+                -- initiate a sample 
+                setControlReg(trgEnd);
+                waitForStatusChng(stat, BIT_RDY, '1', 0ns);
+
+                -- prepare next iteration of trigger simulation
+                actCnt := 0;
                 actIdx := actIdx + 1;
-                if actIdx = test_data'length then
+                if actIdx > trg_data_length() then
                     testStateNxt := stTestEnd;
                 end if;
+                testStateNxt := stTestStart;
             when stTestEnd =>
                 wrOut("---------------------------------------------");
                 wrOut("Test done");
+                testDone <= '1';
+                testStateNxt := stIdle; 
+            when others =>
+                wrOut("Unexpected state!");
                 testStateNxt := stIdle; 
         end case;
+ 
     end process dht11_test_pattern_nxt;
-
 end Behavioral;
