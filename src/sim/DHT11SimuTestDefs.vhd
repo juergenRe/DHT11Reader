@@ -91,7 +91,7 @@ type t_trgdata is record
     d_trg       : std_logic_vector(1 downto 0);     -- setting to trigger a conversion when everyting is ready
     d_smpl      : std_logic_vector(1 downto 0);     -- setting after conversion has started
     d_off       : std_logic_vector(1 downto 0);     -- setting to stop everything after n passes
-    desc        : string(1 to 20);
+    desc        : string(1 to 40);
 end record;
 type t_test_ary is array (natural range <>) of t_testdata;
 type t_trg_ary is array (natural range <>) of t_trgdata;
@@ -101,22 +101,26 @@ constant trg_data: t_trg_ary := (
       d_trg     => "01",
       d_smpl    => "00",
       d_off     => "00",
-      desc      => "One shot [drv]      "),
+      desc      => "One shot [drv]                          "),
+      --           "0123456789012345678901234567890123456789"
     1       => ( -- standard one shot with rest by component
       d_trg     => "01",
       d_smpl    => "01",
       d_off     => "00",
-      desc      => "One shot [comp]     "),
+      desc      => "One shot [comp]                         "),
+      --           "0123456789012345678901234567890123456789"
     2       => ( -- standard one shot with rest be app
       d_trg     => "11",
       d_smpl    => "10",
       d_off     => "00",
-      desc      => "Auto [once]         "),
+      desc      => "Auto [once]                             "),
+      --           "0123456789012345678901234567890123456789"
     3       => ( -- standard one shot with rest be app
       d_trg     => "11",
       d_smpl    => "11",
       d_off     => "00",
-      desc      => "Auto [cont]         ")
+      desc      => "Auto [cont]                             ")
+      --           "0123456789012345678901234567890123456789"
 --                  12345678901234567890
 );
 
@@ -369,6 +373,8 @@ constant test_data : t_test_ary := (
   
     -- function prototypes
         function calc_crc ( data : in std_logic_vector) return std_logic_vector;
+		function test_data_length return natural;
+		function trg_data_length return natural;
         procedure getActData(idx: in natural; 
                          dx: out std_logic_vector;
                          t_trigin: out time; 
@@ -381,6 +387,11 @@ constant test_data : t_test_ary := (
                          bchk: out std_logic;
                          expectResult: out integer; 
                          desc: out string);
+        procedure getActTrigger(idx: in natural;
+                                trgStart: out std_logic_vector; 
+                                trgSmpl: out std_logic_vector; 
+                                trgEnd: out std_logic_vector; 
+                                desc: out string);
 
 end DHT11SimuTestDefs;
 

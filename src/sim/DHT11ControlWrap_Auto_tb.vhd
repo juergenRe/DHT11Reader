@@ -361,7 +361,7 @@ dht11_dvc: DHT11DeviceSimulation
                 -- prepare next iteration of trigger simulation
                 actCnt := 0;
                 actIdx := actIdx + 1;
-                if actIdx > trg_data_length() then
+                if actIdx > trg_data_length then
                     testStateNxt := stTestEnd;
                 end if;
                 testStateNxt := stTestStart;

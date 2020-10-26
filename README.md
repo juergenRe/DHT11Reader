@@ -4,8 +4,8 @@ Component to read DHT11 humidity and temperature sensor via AXI-interface.
 Created for Vivado 2019.1
 
 Register description:
-- Register 1: (write-only) Bit31: Enable; Bit30: AutoTrigger; Bit 7..0: delay in s. 0: disable autotrigger
-- Register 2: (read-only) Stauts Bit 31: new sample; bit 30: error during transmission, sample incorrect. Bits will be reset after reading register 3.
+- Register 1: (write-only) Bit1: AutoTrigger enable; Bit0: Trigger; 
+- Register 2: (read-only) Status Bit 7:4: actual error; bit 3: unused; bit 2: device ready; bit 1: data ready; bit 0: error
 - Register 3: (read-only) Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
 - Register 4: unused
 
