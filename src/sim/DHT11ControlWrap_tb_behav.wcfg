@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="47844785635805fs"></ZoomStartTime>
-      <ZoomEndTime time="47846449261016fs"></ZoomEndTime>
-      <Cursor1Time time="47846315000000fs"></Cursor1Time>
+      <ZoomStartTime time="16896261416667fs"></ZoomStartTime>
+      <ZoomEndTime time="16896942916668fs"></ZoomEndTime>
+      <Cursor1Time time="16896395000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="231"></NameColumnWidth>
-      <ValueColumnWidth column_width="286"></ValueColumnWidth>
+      <ValueColumnWidth column_width="282"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="41" />
    <wave_markers>
@@ -74,6 +74,10 @@
       <obj_property name="ElementShortName">stSmplStateReg</obj_property>
       <obj_property name="ObjectShortName">stSmplStateReg</obj_property>
    </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/actControlReg" type="other">
+      <obj_property name="ElementShortName">actControlReg</obj_property>
+      <obj_property name="ObjectShortName">actControlReg</obj_property>
+   </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_tb/uut/smplTrg" type="logic">
       <obj_property name="ElementShortName">smplTrg</obj_property>
       <obj_property name="ObjectShortName">smplTrg</obj_property>
@@ -89,10 +93,6 @@
    <wvobject fp_name="/DHT11ControlWrap_tb/uut/dav_status" type="logic">
       <obj_property name="ElementShortName">dav_status</obj_property>
       <obj_property name="ObjectShortName">dav_status</obj_property>
-   </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_tb/uut/actControl" type="array">
-      <obj_property name="ElementShortName">actControl[1:0]</obj_property>
-      <obj_property name="ObjectShortName">actControl[1:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider317">
       <obj_property name="label">DHT11Control</obj_property>

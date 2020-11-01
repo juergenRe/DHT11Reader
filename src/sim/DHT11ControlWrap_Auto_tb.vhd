@@ -44,7 +44,7 @@ architecture Behavioral of DHT11ControlWrap_Auto_tb is
    -- Clock period definitions
 constant clk_period:    time := 10 ns;
 constant C_S_AXI_DATA_WIDTH:    integer := 32;
-constant MAXAUTO: integer := 10;
+constant MAXAUTO: integer := 4;
 
    --internal signals
 signal clk:             std_logic := '0';
@@ -73,16 +73,20 @@ signal outErr:          std_logic_vector(3 downto 0);       -- error code
 type t_testState is (stPowOn, stForceReset, stTimingSetUp, stIdle, stTestSetUp, stTestStart, stTestAssertStart, stTestRun, stTestIterate, stTestEnd);
 signal testStateAct:    t_testState;
 --signal testStateNxt:    t_testState;
-signal startTest:       std_logic;
-signal testDone:        std_logic;
+signal startTest:       std_logic := '0';
+signal testDone:        std_logic := '0';
 signal testCnt:         unsigned(4 downto 0);       -- holds the current test index
 signal trgSetControl:   std_logic := '0';
 signal trgSetControlDone: std_logic := '0';
 signal trgSetTiming:    std_logic := '0';
 signal trgSetTimingDone: std_logic := '0';
+signal trgStart1S:      std_logic_vector(1 downto 0) := "00";
+signal trgStartS:       std_logic_vector(1 downto 0) := "00";
+signal trgSmplS:        std_logic_vector(1 downto 0) := "00";
+signal trgPEndS:        std_logic_vector(1 downto 0) := "00";
+signal trgEndS:         std_logic_vector(1 downto 0) := "00";
 
 signal tt0, tt1:        time;
-
 
 component DHT11Wrapper is
 	generic (
@@ -232,10 +236,16 @@ dht11_dvc: DHT11DeviceSimulation
         startTest <= '0';
         wait for 200 ns;
 		wait until rising_edge(clk);
+
+		wait until testDone = '1';
+		wait until rising_edge(clk);
+
 		startTest <= '1';
 		wait until rising_edge(clk);
+
 		wait until testDone = '0';
 		wait until rising_edge(clk);
+
 		startTest <= '0';
 		wait until testDone = '1';
 		
@@ -255,7 +265,7 @@ dht11_dvc: DHT11DeviceSimulation
         variable stat:      std_logic_vector(7 downto 0);
         variable t0, t1, t2, t3, t4, t5, t6: time;
         variable bchk:      std_logic;
-        variable trgStart, trgSmpl, trgEnd: std_logic_vector(1 downto 0);
+        variable trgStart1, trgStart, trgSmpl, trgPassEnd, trgEnd: std_logic_vector(1 downto 0);
         variable testStateReg: t_testState := stPowOn;
         variable testStateNxt: t_testState := stPowOn;
         -- trigger change on U_CONTROL
@@ -292,8 +302,9 @@ dht11_dvc: DHT11DeviceSimulation
                 actStatus <= stat;
                 testStateNxt := stIdle;
             when stIdle =>
+                testDone <= '1';
                 if startTest = '1' then
-                    testStateNxt := stTestSetUp;
+                    testStateNxt := stTimingSetUp;
                 end if;
             when stTimingSetUp =>
                 getActData(0, dataVal, t0, t1, t2, t3, t4, t5, t6, bchk, errC, desc);
@@ -306,22 +317,33 @@ dht11_dvc: DHT11DeviceSimulation
                     errbit := '0';
                 end if;
                 expectErr <= errC;
+                testStateNxt := stTestSetUp;
             when stTestSetUp =>
                 actCnt := 0;
                 testCnt <= TO_UNSIGNED(actCnt, 5);
-                getActTrigger(actIdx, trgStart, trgSmpl, trgEnd, desc);
+                getActTrigger(actIdx, trgStart1, trgStart, trgSmpl, trgPassEnd, trgEnd, desc);
                 wrOut("---------------------------------------------");
                 wrOut("Start Mode Test: " & desc);
                 testStateNxt := stTestStart;
+                trgStart1S <= trgStart1;
+                trgStartS <= trgStart;
+                trgSmplS <= trgSmpl;
+                trgPEndS <= trgPassEnd;
+                trgEndS <= trgEnd;
             when stTestStart =>
                 -- initiate a sample 
-                setControlReg(trgStart);
-                waitForStatusChng(stat, BIT_RDY, '0', 0ns);
+                if actCnt = 0 then
+                    setControlReg(trgStart1);
+                else
+                    setControlReg(trgStart);
+                end if;
+                if trgStart1(1) = '0' then   -- do not check RDY bit when in AUTO mode, we will be too late
+                    waitForStatusChng(stat, BIT_RDY, '0', 0ns);
+                end if;
                 setControlReg(trgSmpl);
                 testStateNxt := stTestAssertStart;
             when stTestAssertStart =>
                 testCnt <= TO_UNSIGNED(actCnt, 5);
-                wrOut("---------------------------------------------");
                 wrOut("   Test #" & integer'image(actCnt));
                 tt0 <= now;
                 waitForStatusChng(stat, BIT_DAV, '0', 1100ns);
@@ -346,6 +368,10 @@ dht11_dvc: DHT11DeviceSimulation
                         report "Expected data values unequal: expect data=" & integer'image(conv_integer(dataVal)) & " => measured data: " & integer'image(res) severity error;
                 end if;
 
+                -- set control register at end of pass
+                setControlReg(trgPassEnd);
+                wait until rising_edge(clk);
+                
                 testStateNxt := stTestSetUp;
                 actCnt := actCnt + 1;
                 if actCnt = MAXAUTO then
@@ -356,15 +382,19 @@ dht11_dvc: DHT11DeviceSimulation
             when stTestIterate =>
                 -- initiate a sample 
                 setControlReg(trgEnd);
-                waitForStatusChng(stat, BIT_RDY, '1', 0ns);
+                -- only check when not yet ready
+                if U_STATUS(BIT_RDY) = '0' then
+                    waitForStatusChng(stat, BIT_RDY, '1', 0ns);
+                end if;
 
                 -- prepare next iteration of trigger simulation
                 actCnt := 0;
                 actIdx := actIdx + 1;
-                if actIdx > trg_data_length then
+                if actIdx >= trg_data_length then
                     testStateNxt := stTestEnd;
+                else
+                    testStateNxt := stTestSetUp;
                 end if;
-                testStateNxt := stTestStart;
             when stTestEnd =>
                 wrOut("---------------------------------------------");
                 wrOut("Test done");

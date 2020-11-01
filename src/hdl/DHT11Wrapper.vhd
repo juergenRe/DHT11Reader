@@ -98,12 +98,16 @@ architecture Behavioral of DHT11Wrapper is
     signal rdy:             std_logic;                          -- component ready to receive new settings
     signal trg:             std_logic;                          -- new settings trigger
     signal cntTick:         std_logic;
+    signal smplRun:         std_logic;
     
     signal cntEn:           std_logic;
     signal cntDone:         std_logic;
     signal smplTrg:         std_logic;
-    signal actControl:      std_logic_vector(1 downto 0);       -- actual written control setting
-    signal actControlNxt:   std_logic_vector(1 downto 0);
+    
+    type t_saState is (saPwrOn, saIdle, saOSTrg, saOSRun, saARun, saATrg);
+    signal actControlReg:   t_saState;       
+    signal actControlNxt:   t_saState;
+    
     signal actCount:        std_logic_vector(SPMPLDLYBITS-1 downto 0);
 
     -- debug attributes
@@ -203,36 +207,73 @@ begin
      
     cfg_tick <= U_WR_TICK;
     int_reset <= '1' when reset = '1' or stSmplStateReg = stPwrOn else '0';
-    
+    smplRun <= '1' when stSmplStateReg = stSample else '0';
+    smplTrg <= '1' when ((actControlReg = saOSTrg) or (actControlReg = saATrg)) else '0' ;
+
     -- handle automatic / one shot sampling states
     -- one shot: after a successful sample, control need to be set again
+    -- U_CONTROL    smplRun smplTrg state
+    --  00          x       0       saIdle
+    --  01          0       1       saOSTrg
+    --  01          1       0       saOSRun     --> saIdle when CNTRL_TRG=0
+    --  10          0       0       saIdle      stay in saIdle when only CNTRL_AUTO goes to 1, need CNTRL_TRG for start
+    --  10          1       1       saARun      --> saATrg when conversion done, --> saIdle when U_CONTROL = "00"
+    --  11          0       1       saATrg      --> saARun when CNTRL_TRG = 1
+    --  11          1       1       saARun      --> saATrg when converion done, --> saIdle when U_CONTROL = "00"
     p_auto_reg: process(clk, int_reset)
     begin
         if rising_edge(clk) then
             if int_reset ='1' then
-                actControl <= (others=>'0');
+                actControlReg <= saPwrOn;
             else
-                actControl <= actControlNxt;
+                actControlReg <= actControlNxt;
             end if;
         end if;
     end process p_auto_reg;
     
-    p_auto_nxt: process(cfg_tick, rdy_r_tick, actControl)
+    p_auto_nxt: process(actControlReg, stSmplStateReg, cfg_tick, smplRun, rdy_r_tick)
     begin
-        actControlNxt <= actControl;
-        -- reset trigger bit when done in one-shot mode, otherwise keep it
-        if rdy_r_tick = '1' then
-            if actControl(CNTRL_AUTO) = '0' then
-                actControlNxt <= (others => '0');
-            end if; 
-        end if;
-        
-        -- external configuration change
-        if cfg_tick = '1' then
-            actControlNxt <= U_CONTROL;
-        end if;
+        actControlNxt <= actControlReg;
+        case actControlReg is
+            when saPwrOn =>
+                if stSmplStateReg = stIdle then
+                    actControlNxt <= saIdle;
+                end if;
+            when saIdle =>
+                if cfg_tick = '1' and U_CONTROL(CNTRL_TRG) = '1' then
+                    if U_CONTROL(CNTRL_AUTO) = '1' then
+                        actControlNxt <= saATrg;
+                    else
+                        actControlNxt <= saOSTrg;
+                    end if;
+                end if;
+            when saOSTrg =>
+                if smplRun = '1' then
+                    actControlNxt <= saOSRun;
+                end if;
+            when saOSRun =>
+                -- either return when conversion finished or a new setting written, but TRG has to be 0
+                if (rdy_r_tick = '1' or cfg_tick = '1') and U_CONTROL(CNTRL_TRG) = '0' then
+                    actControlNxt <= saIdle;
+                end if;
+            when saATrg =>
+                if smplRun = '1' then
+                    actControlNxt <= saARun;
+                end if;
+            when saArun =>
+                if rdy_r_tick = '1' then 
+                    if U_CONTROL(CNTRL_AUTO) = '0' then
+                        if U_CONTROL(CNTRL_TRG) = '1' then
+                            actControlNxt <= saOSRun;       -- wait for falling edge of TRG to return to idle
+                        else                
+                            actControlNxt <= saIdle;
+                        end if;
+                    else
+                        actControlNxt <= saATrg;
+                    end if;
+                end if;
+        end case;
     end process p_auto_nxt;
-    smplTrg <= actControl(CNTRL_TRG);
     
     -- handle sampling of the DHT11 including power on and wait after getting a new sample
     p_smplState_reg: process(clk, reset)

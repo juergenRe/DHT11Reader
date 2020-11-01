@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="41646704969117fs"></ZoomStartTime>
-      <ZoomEndTime time="41653401006177fs"></ZoomEndTime>
-      <Cursor1Time time="41648035000000fs"></Cursor1Time>
+      <ZoomStartTime time="471118881765425fs"></ZoomStartTime>
+      <ZoomEndTime time="471119077646916fs"></ZoomEndTime>
+      <Cursor1Time time="471119045000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="381"></NameColumnWidth>
-      <ValueColumnWidth column_width="270"></ValueColumnWidth>
+      <NameColumnWidth column_width="243"></NameColumnWidth>
+      <ValueColumnWidth column_width="158"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="24" />
+   <WVObjectSize size="31" />
    <wave_markers>
       <marker time="16386035000000" label="" />
    </wave_markers>
@@ -83,10 +83,6 @@
       <obj_property name="ElementShortName">testStateAct</obj_property>
       <obj_property name="ObjectShortName">testStateAct</obj_property>
    </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/testCnt" type="array">
-      <obj_property name="ElementShortName">testCnt[4:0]</obj_property>
-      <obj_property name="ObjectShortName">testCnt[4:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_Auto_tb/startTest" type="logic">
       <obj_property name="ElementShortName">startTest</obj_property>
       <obj_property name="ObjectShortName">startTest</obj_property>
@@ -95,21 +91,33 @@
       <obj_property name="ElementShortName">testDone</obj_property>
       <obj_property name="ObjectShortName">testDone</obj_property>
    </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgSetControl" type="logic">
-      <obj_property name="ElementShortName">trgSetControl</obj_property>
-      <obj_property name="ObjectShortName">trgSetControl</obj_property>
+   <wvobject type="divider" fp_name="divider49">
+      <obj_property name="label">Settings</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgSetControlDone" type="logic">
-      <obj_property name="ElementShortName">trgSetControlDone</obj_property>
-      <obj_property name="ObjectShortName">trgSetControlDone</obj_property>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/testCnt" type="array">
+      <obj_property name="ElementShortName">testCnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">testCnt[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgSetTiming" type="logic">
-      <obj_property name="ElementShortName">trgSetTiming</obj_property>
-      <obj_property name="ObjectShortName">trgSetTiming</obj_property>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgStart1S" type="array">
+      <obj_property name="ElementShortName">trgStart1S[1:0]</obj_property>
+      <obj_property name="ObjectShortName">trgStart1S[1:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgSetTimingDone" type="logic">
-      <obj_property name="ElementShortName">trgSetTimingDone</obj_property>
-      <obj_property name="ObjectShortName">trgSetTimingDone</obj_property>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgStartS" type="array">
+      <obj_property name="ElementShortName">trgStartS[1:0]</obj_property>
+      <obj_property name="ObjectShortName">trgStartS[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgSmplS" type="array">
+      <obj_property name="ElementShortName">trgSmplS[1:0]</obj_property>
+      <obj_property name="ObjectShortName">trgSmplS[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgPEndS" type="array">
+      <obj_property name="ElementShortName">trgPEndS[1:0]</obj_property>
+      <obj_property name="ObjectShortName">trgPEndS[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/trgEndS" type="array">
+      <obj_property name="ElementShortName">trgEndS[1:0]</obj_property>
+      <obj_property name="ObjectShortName">trgEndS[1:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider33">
       <obj_property name="label">Wrapper</obj_property>
@@ -118,5 +126,25 @@
    <wvobject fp_name="/DHT11ControlWrap_Auto_tb/uut/stSmplStateReg" type="other">
       <obj_property name="ElementShortName">stSmplStateReg</obj_property>
       <obj_property name="ObjectShortName">stSmplStateReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/uut/actControlReg" type="other">
+      <obj_property name="ElementShortName">actControlReg</obj_property>
+      <obj_property name="ObjectShortName">actControlReg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/uut/smplTrg" type="logic">
+      <obj_property name="ElementShortName">smplTrg</obj_property>
+      <obj_property name="ObjectShortName">smplTrg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/uut/smplRun" type="logic">
+      <obj_property name="ElementShortName">smplRun</obj_property>
+      <obj_property name="ObjectShortName">smplRun</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/uut/cfg_tick" type="logic">
+      <obj_property name="ElementShortName">cfg_tick</obj_property>
+      <obj_property name="ObjectShortName">cfg_tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_Auto_tb/uut/rdy_r_tick" type="logic">
+      <obj_property name="ElementShortName">rdy_r_tick</obj_property>
+      <obj_property name="ObjectShortName">rdy_r_tick</obj_property>
    </wvobject>
 </wave_config>

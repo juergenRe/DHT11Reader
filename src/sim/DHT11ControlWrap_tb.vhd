@@ -70,8 +70,8 @@ signal outErr:          std_logic_vector(3 downto 0);       -- error code
 type t_testState is (stPowOn, stForceReset, stIdle, stTestSetUp, stTestStart, stTestAssertStart, stTestRun, stTestEnd);
 signal testStateAct:    t_testState;
 --signal testStateNxt:    t_testState;
-signal startTest:       std_logic;
-signal testDone:        std_logic;
+signal startTest:       std_logic := '0';
+signal testDone:        std_logic := '0';
 signal testCnt:         unsigned(4 downto 0);       -- holds the current test index
 signal trgSetControl:   std_logic := '0';
 signal trgSetControlDone: std_logic := '0';
@@ -229,10 +229,16 @@ dht11_dvc: DHT11DeviceSimulation
         startTest <= '0';
         wait for 200 ns;
 		wait until rising_edge(clk);
+
+		wait until testDone = '1';
+		wait until rising_edge(clk);
+
 		startTest <= '1';
 		wait until rising_edge(clk);
+
 		wait until testDone = '0';
 		wait until rising_edge(clk);
+
 		startTest <= '0';
 		wait until testDone = '1';
 		
