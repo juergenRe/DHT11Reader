@@ -36,6 +36,7 @@ use IEEE.std_logic_unsigned.all;
 entity DHT11Wrapper is
 	generic (
 		-- Users to add parameters here
+		C_U_STATUS_WIDTH        : integer := 1;
 		C_S_AXI_DATA_WIDTH	    : integer := 32;
 		NDIV                    : integer := 99;
         PWRONDLY                : integer := 21
@@ -65,6 +66,7 @@ end DHT11Wrapper;
 architecture Behavioral of DHT11Wrapper is
 --    constant CFG_ONOFF:     integer := C_S_AXI_DATA_WIDTH -1;
 --    constant CFG_STATUS:    integer := C_S_AXI_DATA_WIDTH -1;
+
     constant STATUS_RDY:    integer := 3;                           -- bit for Ready
     constant DATA_AVAIL:    integer := 2;                           -- bit for new data available
     constant STATUS_SHC:    integer := 1;                           -- bit for short circuit indication

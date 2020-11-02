@@ -42,6 +42,7 @@ architecture Behavioral of DHT11ControlWrap_tb is
    -- Clock period definitions
 constant clk_period:    time := 10 ns;
 constant C_S_AXI_DATA_WIDTH:    integer := 32;
+constant C_U_STATUS_WIDTH: integer := 8;
 
    --internal signals
 signal clk:             std_logic := '0';
@@ -84,6 +85,7 @@ signal tt0, tt1:        time;
 component DHT11Wrapper is
 	generic (
 		-- Users to add parameters here
+		C_U_STATUS_WIDTH        : integer := 1;
 		C_S_AXI_DATA_WIDTH	    : integer := 32;
 		NDIV                    : integer := 99;
         PWRONDLY                : integer := 21
@@ -173,6 +175,7 @@ begin
 
 uut: DHT11Wrapper
     generic map (
+	    C_U_STATUS_WIDTH        => C_U_STATUS_WIDTH,
         C_S_AXI_DATA_WIDTH      => N_AXI,
         NDIV                    => NDIV,
         PWRONDLY                => 10

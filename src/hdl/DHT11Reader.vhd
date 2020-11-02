@@ -47,6 +47,7 @@ entity DHT11Reader is
 end DHT11Reader;
 
 architecture arch_imp of DHT11Reader is
+    constant C_U_STATUS_WIDTH: integer := 8;
     constant PWRONDLY:      integer := 21;
     
     signal wr_tick:         std_logic;
@@ -62,6 +63,7 @@ architecture arch_imp of DHT11Reader is
 	-- component declaration
 	component DHT11_S00_AXI is
 		generic (
+		C_U_STATUS_WIDTH    : integer := 1;
 		C_S_AXI_DATA_WIDTH	: integer := 32;
 		C_S_AXI_ADDR_WIDTH	: integer := 4
 		);
@@ -110,6 +112,7 @@ architecture arch_imp of DHT11Reader is
 component DHT11Wrapper is
 	generic (
 		-- Users to add parameters here
+		C_U_STATUS_WIDTH        : integer := 1;
 		C_S_AXI_DATA_WIDTH	    : integer := 32;
 		NDIV                    : integer := 99;
         PWRONDLY                : integer := 21
@@ -141,6 +144,7 @@ begin
 -- Instantiation of Axi Bus Interface S00_AXI
 DHT11_S00_AXI_inst: DHT11_S00_AXI
 	generic map (
+	    C_U_STATUS_WIDTH    => C_U_STATUS_WIDTH,
 		C_S_AXI_DATA_WIDTH	=> C_S00_AXI_DATA_WIDTH,
 		C_S_AXI_ADDR_WIDTH	=> C_S00_AXI_ADDR_WIDTH
 	)
@@ -177,6 +181,7 @@ DHT11_S00_AXI_inst: DHT11_S00_AXI
 	-- Add user logic here
 dht11wrapper_inst: DHT11Wrapper
     generic map (
+	    C_U_STATUS_WIDTH        => C_U_STATUS_WIDTH,
         C_S_AXI_DATA_WIDTH      => C_S00_AXI_DATA_WIDTH,
         NDIV                    => NDIV,
         PWRONDLY                => PWRONDLY
