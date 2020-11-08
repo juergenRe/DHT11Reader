@@ -23,6 +23,8 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.all;
 use IEEE.numeric_std.all;
+
+use work.GenFuncLib.ALL;
 use work.DHT11SimuTestDefs.ALL;
 
 -- Uncomment the following library declaration if using
@@ -55,6 +57,7 @@ signal dhtOutSig:      std_logic;                          -- driver line to DHT
 
 signal trg:            std_logic := '0';                   -- new settings trigger
 signal dhtInSig:       std_logic := '1';                   -- input line towards simulated DHT11
+signal b_chksumErr:    std_logic;
 
 type t_testState is (stPowOn, stIdle, stTestSetUp, stTestStart, stTestRun, stTestEnd);
 signal testStateReg:    t_testState;
@@ -67,52 +70,8 @@ signal testCnt:         unsigned(4 downto 0);       -- holds the current test in
 signal expectErr:       integer;
 
 ----------------------------------------
-component DHT11Control
-    generic (
-        NDIV:           integer := 99;                          -- 1us ticks @ 100MHz clock
-        POWONDLY:       boolean := false                        -- enable simulation timings or real timings
-    );
-    port (
-        clk:            in std_logic;
-        reset:          in std_logic;
-        cntTick:        out std_logic;                          -- counter tick
-        outData:        out std_logic_vector(31 downto 0);      -- sampled data values
-        outErr:         out std_logic_vector(3 downto 0);       -- detailed error code
-        trg:            in std_logic;                           -- new settings trigger
-        rdy:            out std_logic;                          -- component ready to receive new settings
-        dhtInSig:       in std_logic;                           -- input line from DHT11
-        dhtOutSig:      out std_logic                           -- output line to DHT11
-     );
-end component;
-
-component DHT11DeviceSimulation is
-    generic (
-        NDATABIT:      integer := 40
-    );
-    port (
-        clk:            in std_logic;
-        reset:          in std_logic;
-        dhtInSig:       out std_logic;                          -- input line from DHT11
-        dhtOutSig:      in std_logic;                           -- output line to DHT11
-        -- configuration inputs for device
-        t_trigin:       in time;
-        t_wakeup:       in time;
-        t_startL:       in time;
-        t_startH:       in time;
-        t_bitL:         in time;
-        t_bitH0:        in time;
-        t_bitH1:        in time;
-        txData:         in std_logic_vector(NDATABIT-1 downto 0)
-     );
-end component;
-
-procedure wrOut (arg : in string := "") is
 begin
-  std.textio.write(std.textio.output, arg & LF);
-end procedure wrOut;
-
-begin
-    uut: DHT11Control
+    uut: entity work.DHT11Control
         generic map(
             NDIV        => NDIV,  
             POWONDLY    => false
@@ -129,7 +88,7 @@ begin
             dhtOutSig   => dhtOutSig
          );
 
-    dht11_dvc: DHT11DeviceSimulation
+    dht11_dvc: entity work.DHT11DeviceSimulation
         generic map (     
             NDATABIT    => NDATABIT
         )          
@@ -145,6 +104,7 @@ begin
             t_bitL      => t_bitL, 
             t_bitH0     => t_bitH0,
             t_bitH1     => t_bitH1,  
+            b_chksumErr => b_chksumErr,
             txData      => txData    
          );           	
     
@@ -206,6 +166,7 @@ begin
         variable desc:      string(1 to 40);
         variable res:       integer;
         variable errCode:   integer;
+        variable bchk:      std_logic;
         variable t0, t1, t2, t3, t4, t5, t6: time;
         
         procedure setTiming(t0, t1, t2, t3, t4, t5, t6: in time) is
@@ -230,8 +191,9 @@ begin
                 end if;
             when stTestSetUp =>
                 testCnt <= TO_UNSIGNED(actIdx, 5);
-                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, errC, desc);
+                getActData(actIdx, dataVal, t0, t1, t2, t3, t4, t5, t6, bchk, errC, desc);
                 setTiming(t0, t1, t2, t3, t4, t5, t6);
+                b_chksumErr <= bchk;
                 txData <= dataVal & calc_crc(dataVal);
                 expectErr <= errC;
                 wrOut("---------------------------------------------");

@@ -60,89 +60,10 @@ architecture arch_imp of DHT11Reader is
     signal dhtInSig:        std_logic;
     signal dhtOutSig:       std_logic;
 
-	-- component declaration
-	component DHT11_S00_AXI is
-		generic (
-		C_U_STATUS_WIDTH    : integer := 1;
-		C_S_AXI_DATA_WIDTH	: integer := 32;
-		C_S_AXI_ADDR_WIDTH	: integer := 4
-		);
-		port (
-		-- register assignment: 
-		-- 0: U_VALUES; (read-only)
-		-- 4: U_STATUS; (read-only)
-		-- 8: U_CONTROL; (write-only)
-		-- C: unused;
-		-- 
-		-- Control port: AUTO, TRG
-        U_CONTROL       : out std_logic_vector(1 downto 0);
-        --  Status bits: Ready, Error, DataValid
-        U_STATUS        : in std_logic_vector(7 downto 0);
-        -- measured values:
-        -- U_VALUES(31 downto 16): 16 bits for humidity
-        -- U_VALUES(15 downto 0):  16 bits for temperature
-        U_VALUES        : in std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
-        U_WR_TICK       : out std_logic;
-		U_RD_TICK       : in std_logic;
-
-		S_AXI_ACLK	    : in std_logic;
-		S_AXI_ARESETN	: in std_logic;
-		S_AXI_AWADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
-		S_AXI_AWPROT	: in std_logic_vector(2 downto 0);
-		S_AXI_AWVALID	: in std_logic;
-		S_AXI_AWREADY	: out std_logic;
-		S_AXI_WDATA	    : in std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-		S_AXI_WSTRB	    : in std_logic_vector((C_S_AXI_DATA_WIDTH/8)-1 downto 0);
-		S_AXI_WVALID	: in std_logic;
-		S_AXI_WREADY	: out std_logic;
-		S_AXI_BRESP	    : out std_logic_vector(1 downto 0);
-		S_AXI_BVALID	: out std_logic;
-		S_AXI_BREADY	: in std_logic;
-		S_AXI_ARADDR	: in std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
-		S_AXI_ARPROT	: in std_logic_vector(2 downto 0);
-		S_AXI_ARVALID	: in std_logic;
-		S_AXI_ARREADY	: out std_logic;
-		S_AXI_RDATA	    : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-		S_AXI_RRESP	    : out std_logic_vector(1 downto 0);
-		S_AXI_RVALID	: out std_logic;
-		S_AXI_RREADY	: in std_logic
-		);
-	end component DHT11_S00_AXI;
-
-component DHT11Wrapper is
-	generic (
-		-- Users to add parameters here
-		C_U_STATUS_WIDTH        : integer := 1;
-		C_S_AXI_DATA_WIDTH	    : integer := 32;
-		NDIV                    : integer := 99;
-        PWRONDLY                : integer := 21
-	);
-	port (
-	    clk         : in std_logic;
-	    reset       : in std_logic;
-		-- control bits to start conversion and have automatic conversion every second
-        U_CONTROL   : in std_logic_vector(1 downto 0);
-        --  Status bits: Ready, Error
-        U_STATUS    : out std_logic_vector(7 downto 0);
-        -- measured values:
-        -- U_VALUES(31 downto 16): 16 bits for temperature
-        -- U_VALUES(15 downto 0):  16 bits for hunidity
-        U_VALUES    : out std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
-		-- output from AXI-module: '1' for one cycle when data is written.
-		-- validates U_CONTROL
-		U_WR_TICK   : in std_logic;
-		-- input to AXI-module: writes actual U_STATUS and U_VALUES values in register 2 + 3 to be read
-		U_RD_TICK   : out std_logic;
-		-- feed through of DHT signals
-        dhtInSig    : in std_logic;                           -- input line from DHT11
-        dhtOutSig   : out std_logic                           -- output line to DHT11
-	);
-end component DHT11Wrapper;
-    
 begin
 
 -- Instantiation of Axi Bus Interface S00_AXI
-DHT11_S00_AXI_inst: DHT11_S00_AXI
+DHT11_S00_AXI_inst: entity work.DHT11_S00_AXI
 	generic map (
 	    C_U_STATUS_WIDTH    => C_U_STATUS_WIDTH,
 		C_S_AXI_DATA_WIDTH	=> C_S00_AXI_DATA_WIDTH,
@@ -179,12 +100,12 @@ DHT11_S00_AXI_inst: DHT11_S00_AXI
 	);
 
 	-- Add user logic here
-dht11wrapper_inst: DHT11Wrapper
+dht11wrapper_inst: entity work.DHT11Wrapper
     generic map (
 	    C_U_STATUS_WIDTH        => C_U_STATUS_WIDTH,
         C_S_AXI_DATA_WIDTH      => C_S00_AXI_DATA_WIDTH,
         NDIV                    => NDIV,
-        PWRONDLY                => PWRONDLY
+        SIMU_FLG                => false
     )
     port map (
         clk         => s00_axi_aclk,

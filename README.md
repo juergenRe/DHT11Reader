@@ -22,7 +22,7 @@ Both projects aim to be able to debug the logic using ILA.
 ### Preparation for IP generation
 - set DHT11Reader as TOP
 - disable constraints files
-- run syntehsis as base check
+- run syntehsis as base check; especially check warnings!
 - remove all ILA cores
 
 ## Recreating the project

@@ -24,6 +24,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
 use IEEE.std_logic_unsigned.all;
 
+use work.GenFuncLib.ALL;
 use work.DHT11SimuTestDefs.ALL;
 
 -- Uncomment the following library declaration if using
@@ -81,64 +82,6 @@ signal trgSetTimingDone: std_logic := '0';
 
 signal tt0, tt1:        time;
 
-
-component DHT11Wrapper is
-	generic (
-		-- Users to add parameters here
-		C_U_STATUS_WIDTH        : integer := 1;
-		C_S_AXI_DATA_WIDTH	    : integer := 32;
-		NDIV                    : integer := 99;
-        PWRONDLY                : integer := 21
-	);
-	port (
-	    clk         : in std_logic;
-	    reset       : in std_logic;
-		-- control bits to start conversion and have automatic conversion every second
-        U_CONTROL   : in std_logic_vector(1 downto 0);
-        --  Status bits: 7:4: Error code; 3: unused; 2: Rdy 1: Data avail; 0: Error bit
-        U_STATUS    : out std_logic_vector(7 downto 0);
-        -- measured values:
-        -- U_VALUES(31 downto 16): 16 bits for temperature
-        -- U_VALUES(15 downto 0):  16 bits for hunidity
-        U_VALUES    : out std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
-		-- output from AXI-module: '1' for one cycle when data is written.
-		-- validates U_CONTROL
-		U_WR_TICK   : in std_logic;
-		-- input to AXI-module: writes actual U_STATUS and U_VALUES values in register 2 + 3 to be read
-		U_RD_TICK   : out std_logic;
-		-- feed through of DHT signals
-        dhtInSig    : in std_logic;                           -- input line from DHT11
-        dhtOutSig   : out std_logic                           -- output line to DHT11
-	);
-end component;
-
-component DHT11DeviceSimulation is
-    generic (
-        NDATABIT:      integer := 40
-    );
-    port (
-        clk:            in std_logic;
-        reset:          in std_logic;
-        dhtInSig:       out std_logic;                          -- input line from DHT11
-        dhtOutSig:      in std_logic;                           -- output line to DHT11
-        -- configuration inputs for device
-        t_trigin:       in time;
-        t_wakeup:       in time;
-        t_startL:       in time;
-        t_startH:       in time;
-        t_bitL:         in time;
-        t_bitH0:        in time;
-        t_bitH1:        in time;
-        b_chksumErr:    in std_logic;
-        txData:         in std_logic_vector(NDATABIT-1 downto 0)
-     );
-end component;
-
-procedure wrOut (arg : in string := "") is
-begin
-  std.textio.write(std.textio.output, arg & LF);
-end procedure wrOut;
-
 -- waits for status change
 procedure waitForStatusChng( actStatus: out std_logic_vector; checkBit: in integer; chkVal: in std_logic; tout: in time) is
     variable cond: boolean := False;
@@ -173,12 +116,12 @@ end waitForStatusChng;
 
 begin
 
-uut: DHT11Wrapper
+uut: entity work.DHT11Wrapper
     generic map (
 	    C_U_STATUS_WIDTH        => C_U_STATUS_WIDTH,
         C_S_AXI_DATA_WIDTH      => N_AXI,
         NDIV                    => NDIV,
-        PWRONDLY                => 10
+        SIMU_FLG                => TRUE
     )
     port map (
         clk         => clk,
@@ -192,7 +135,7 @@ uut: DHT11Wrapper
         dhtOutSig   => dhtOutSig
     );
 
-dht11_dvc: DHT11DeviceSimulation
+dht11_dvc: entity work.DHT11DeviceSimulation
     generic map (     
         NDATABIT    => NDATABIT
     )          

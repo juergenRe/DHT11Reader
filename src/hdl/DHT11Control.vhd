@@ -28,6 +28,8 @@ use ieee.numeric_std.all;
 -- use IEEE.NUMERIC_STD.ALL;
 use IEEE.std_logic_unsigned.all;
 
+use work.GenFuncLib.ALL;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -52,16 +54,6 @@ entity DHT11Control is
 end DHT11Control;
 
 architecture Behavioral of DHT11Control is
-
--- ternary if function for integer return valus
-function tif(cond : boolean; res_true, res_false : integer) return integer is
-begin
-  if cond then
-    return res_true;
-  else
-    return res_false;
-  end if;
-end function;
 
 function cnvError(err: integer) return std_logic_vector is
 begin
@@ -167,25 +159,6 @@ signal dataSampleNxt:   std_logic_vector(DHTDATALEN-1 downto 0);    -- final sam
 --attribute mark_debug of actData: signal is "true";
 --attribute mark_debug of bitCntReg: signal is "true";
 
--- shift register for input data
-component ShiftLeft is
-generic (
-    NBITS            : positive := 15
-);
-port (
-    clk              : in std_logic;
-    reset            : in std_logic;
-    -- Input
-    setEnable        : in std_logic;
-    dataIn           : in std_logic_vector(NBITS-1 downto 0);
-    dataBit          : in std_logic;
-    -- Control
-    shiftEnable      : in std_logic;
-    -- Output
-    dataOut          : out std_logic_vector(NBITS-1 downto 0)
-);
-end component;
-
 begin
 
     --cntMaxInit <= '0' & x"124FF";             -- set a max value to compare for init
@@ -232,7 +205,7 @@ begin
     
     sr_reset <= '1' when reset = '1' or (stDataSmplReg = stPowOn) else '0';
     
-    dataRegister: ShiftLeft
+    dataRegister: entity work.ShiftLeft
         generic map (
             NBITS       => DHTDATALEN
         )
@@ -301,7 +274,7 @@ begin
         end if;
     end process smpl_state_proc_reg;
     
-    smpl_state_proc_nxt: process(stSmplReg, smplCntReg, bitCntReg, dhtInSig, trg, chkSum, actData)
+    smpl_state_proc_nxt: process(stSmplReg, errCodeReg, smplCntReg, bitCntReg, dhtInSig, trg, chkSum, actData)
     begin
         stSmplNxt <= stSmplReg;
         bitCntNxt <= bitCntReg;
