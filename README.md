@@ -4,10 +4,17 @@ Component to read DHT11 humidity and temperature sensor via AXI-interface.
 Created for Vivado 2019.1
 
 Register description:
-- Register 1: (write-only) Bit1: AutoTrigger enable; Bit0: Trigger; 
-- Register 2: (read-only) Status Bit 7:4: actual error; bit 3: unused; bit 2: device ready; bit 1: data ready; bit 0: error
-- Register 3: (read-only) Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
-- Register 4: unused
+- Register 1 (00): (write-only) Bit1: AutoTrigger enable; Bit0: Trigger; 
+- Register 2 (04): (read-only) Status Bit 7:4: actual error; bit 3: unused; bit 2: device ready; bit 1: data ready; bit 0: error
+- Register 3 (08): (read-only) Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
+- Register 4 (0C): unused
+
+Interrupt support:
+- Register 1 (00): (R/W) Bit 0: Global interrupt enable
+- Register 2 (04): (R/W) Bit 1: Device ready; bit 0: Data available
+- Register 3 (08): (RO): Interrupt status
+- Register 4 (0C): (R/W): Interrupt acknowledge
+- Register 5 (10): (RO): Interrupt pending
 
 ## Testing projects:
 - DHT11DemoStandAlone: runs as non-BD project in PL to access directly the DHT11 component
@@ -18,6 +25,7 @@ Both projects aim to be able to debug the logic using ILA.
 - uncomment mark debug nets
 - set one of the test projects as Top
 - enable constraints files
+- Simulation set 3 is dedicated to test the AXI behavior. A structured testbench has been developped for this.
 
 ### Preparation for IP generation
 - set DHT11Reader as TOP

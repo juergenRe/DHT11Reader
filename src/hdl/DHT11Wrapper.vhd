@@ -59,6 +59,7 @@ entity DHT11Wrapper is
 		U_WR_TICK   : in std_logic;
 		-- input to AXI-module: writes actual U_STATUS and U_VALUES values in register 2 + 3 to be read
 		U_RD_TICK   : out std_logic;
+		U_INTR      : out std_logic_vector(1 downto 0);
 		-- feed through of DHT signals
         dhtInSig    : in std_logic;                           -- input line from DHT11
         dhtOutSig   : out std_logic                           -- output line to DHT11
@@ -165,6 +166,7 @@ begin
     errBit <= outErr(3) or outErr(2) or outErr(1) or outErr(0);
     U_STATUS <= outErr & '0' & rdy_status & dav_status & errBit;
     U_VALUES <= outData;
+    U_INTR <= rdy_status & dav_status;
 
     -- 1s delay counter for power on and waiting time after a sample
     dly_inst: entity work.mod_m_counter

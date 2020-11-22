@@ -7,19 +7,20 @@
          <top_modules>
             <top_module name="DHT11ControlWrap_tb" />
             <top_module name="dht11simutestdefs" />
+            <top_module name="genfunclib" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="42158193158455fs"></ZoomStartTime>
-      <ZoomEndTime time="42159344207727fs"></ZoomEndTime>
-      <Cursor1Time time="42158385000000fs"></Cursor1Time>
+      <ZoomStartTime time="126109458384189fs"></ZoomStartTime>
+      <ZoomEndTime time="126110534323163fs"></ZoomEndTime>
+      <Cursor1Time time="126110355000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="231"></NameColumnWidth>
-      <ValueColumnWidth column_width="266"></ValueColumnWidth>
+      <ValueColumnWidth column_width="258"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="45" />
+   <WVObjectSize size="46" />
    <wave_markers>
       <marker time="15000000" label="" />
       <marker time="16895365000000" label="" />
@@ -53,6 +54,10 @@
    <wvobject fp_name="/DHT11ControlWrap_tb/U_RD_TICK" type="logic">
       <obj_property name="ElementShortName">U_RD_TICK</obj_property>
       <obj_property name="ObjectShortName">U_RD_TICK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/DHT11ControlWrap_tb/uut/U_INTR" type="array">
+      <obj_property name="ElementShortName">U_INTR[1:0]</obj_property>
+      <obj_property name="ObjectShortName">U_INTR[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/DHT11ControlWrap_tb/dhtInSig" type="logic">
       <obj_property name="ElementShortName">dhtInSig</obj_property>

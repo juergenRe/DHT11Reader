@@ -4,15 +4,14 @@ use ieee.numeric_std.all;
 
 entity DHT11_S00_AXI is
 	generic (
-		-- Users to add parameters here
-        C_U_STATUS_WIDTH    : integer := 1;
-		-- User parameters ends
-		-- Do not modify the parameters beyond this line
-
-		-- Width of S_AXI data bus
-		C_S_AXI_DATA_WIDTH	: integer	:= 32;
-		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 4
+        C_U_STATUS_WIDTH    : integer := 1;    -- Width of status signal
+		C_S_AXI_DATA_WIDTH	: integer := 32;   -- Width of S_AXI data bus
+		C_S_AXI_ADDR_WIDTH	: integer := 4;    -- Width of S_AXI address bus
+		C_NUM_OF_INTR	    : integer := 2;
+		C_INTR_SENSITIVITY	: std_logic_vector := x"FFFFFFFF";
+		C_INTR_ACTIVE_STATE	: std_logic_vector := x"FFFFFFFF";
+		C_IRQ_SENSITIVITY	: integer := 1;
+		C_IRQ_ACTIVE_STATE	: integer := 1
 	);
 	port (
 		-- Users to add ports here:
@@ -25,6 +24,8 @@ entity DHT11_S00_AXI is
         -- U_VALUES(31 downto 16): 16 bits for humidity
         -- U_VALUES(15 downto 0):  16 bits for temperature
         U_VALUES    : in std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
+        -- user interrupt entris
+        U_INTR      : in std_logic_vector(C_NUM_OF_INTR downto 0);
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 		U_WR_TICK:  out std_logic;
@@ -90,7 +91,8 @@ entity DHT11_S00_AXI is
 		S_AXI_RVALID	: out std_logic;
 		-- Read ready. This signal indicates that the master can
     		-- accept the read data and response information.
-		S_AXI_RREADY	: in std_logic
+		S_AXI_RREADY	: in std_logic;
+		irq             : out std_logic
 	);
 end DHT11_S00_AXI;
 
@@ -110,26 +112,32 @@ architecture arch_imp of DHT11_S00_AXI is
 
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
-	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
-	-- ADDR_LSB = 2 for 32 bits (n downto 2)
-	-- ADDR_LSB = 3 for 64 bits (n downto 3)
-	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 1;
+	-- C_ADDR_LSB is used for addressing 32/64 bit registers/memories
+	-- C_ADDR_LSB = 2 for 32 bits (n downto 2)
+	-- C_ADDR_LSB = 3 for 64 bits (n downto 3)
+	-- C_DREG_WIDTH = 2 when addressing 4 register
+	-- DREG_MASK will in that case contain 2 bits
+    constant C_DREG_WIDTH: integer := 3;        --  using addresses from 0x00 to 0x1F --> 3 bits
+	constant C_ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
+	constant C_DREG_MASK : positive:= C_ADDR_LSB + C_DREG_WIDTH;
 	------------------------------------------------
 	---- Signals for user logic register space example
 	--------------------------------------------------
-	---- Number of Slave Registers 4
-	signal slv_reg0	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal slv_reg1	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal slv_reg2	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal slv_reg3	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal slv_reg_rden	: std_logic;
-	signal slv_reg_wren	: std_logic;
-	signal reg_data_out	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal byte_index	: integer;
-	signal aw_en	: std_logic;
-	
-	signal wren_dly: std_logic;
+	signal slv_reg_rden	   : std_logic;
+	signal slv_reg_wren	   : std_logic;
+	signal reg_data_out	   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal reg_int_out	   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal byte_index	   : integer;
+	signal aw_en	       : std_logic;
+	signal is_int_reg_selw : std_logic;
+	signal is_int_reg_selr : std_logic;
+	signal is_int_reg_w    : std_logic;
+	signal is_int_reg_r    : std_logic;
+	signal is_data_reg_w   : std_logic;
+	signal is_data_reg_r   : std_logic;
+	signal awaddr_masked   : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto C_DREG_MASK);
+	signal araddr_masked   : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto C_DREG_MASK);
+	signal addr_int        : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto C_DREG_MASK);
 
     -- debug attributes
 --    attribute mark_debug : string;
@@ -138,25 +146,83 @@ architecture arch_imp of DHT11_S00_AXI is
 --    attribute mark_debug of axi_rvalid: signal is "true";
 
 begin
-    -- user signal assignments
-    U_CONTROL <= slv_reg2(1 downto 0);
-    U_WR_TICK <= wren_dly;
+    -- create address enable signals for accessing data or interrupt registers
+    addr_int        <= (others => '1');
+    awaddr_masked   <= axi_awaddr(C_S_AXI_ADDR_WIDTH-1 downto C_DREG_MASK);
+    araddr_masked   <= axi_araddr(C_S_AXI_ADDR_WIDTH-1 downto C_DREG_MASK);
+    is_int_reg_selw <= '1' when (awaddr_masked = addr_int) else '0';
+    is_int_reg_selr <= '1' when (araddr_masked = addr_int) else '0';
+    is_int_reg_w    <= is_int_reg_selw and slv_reg_wren;
+    is_int_reg_r    <= is_int_reg_selr and slv_reg_wren;
+    is_data_reg_w   <= not is_int_reg_selw and slv_reg_wren;
+    is_data_reg_r   <= not is_int_reg_selr and slv_reg_rden;
     
-	-- I/O Connections assignments
-
+	-- output connections assignments
 	S_AXI_AWREADY	<= axi_awready;
 	S_AXI_WREADY	<= axi_wready;
-	S_AXI_BRESP	<= axi_bresp;
+	S_AXI_BRESP	    <= axi_bresp;
 	S_AXI_BVALID	<= axi_bvalid;
 	S_AXI_ARREADY	<= axi_arready;
-	S_AXI_RDATA	<= axi_rdata;
-	S_AXI_RRESP	<= axi_rresp;
+	S_AXI_RDATA	    <= axi_rdata;
+	S_AXI_RRESP	    <= axi_rresp;
 	S_AXI_RVALID	<= axi_rvalid;
+	
+DHT11_S00_AXI_DataRegs_inst: entity work.DHT11_S00_AXI_DataRegs
+	generic map (
+        C_U_STATUS_WIDTH    => C_U_STATUS_WIDTH,
+		C_S_AXI_DATA_WIDTH	=> C_S_AXI_DATA_WIDTH,
+		C_S_AXI_ADDR_WIDTH	=> C_S_AXI_ADDR_WIDTH,
+		C_ADDR_LSB          => C_ADDR_LSB
+	)
+	port map (
+	    U_CONTROL       => U_CONTROL,
+	    U_STATUS        => U_STATUS,
+	    U_VALUES        => U_VALUES,
+	    U_WR_TICK       => U_WR_TICK,
+	    U_RD_TICK       => U_RD_TICK,
+	    ------------------------------- 
+		S_AXI_ACLK	    => S_AXI_ACLK,
+		S_AXI_ARESETN	=> S_AXI_ARESETN,
+		S_AXI_WSTRB     => S_AXI_WSTRB,
+		S_AXI_WDATA     => S_AXI_WDATA,
+                       
+        axi_awaddr      => axi_awaddr,
+        axi_araddr      => axi_araddr,
+        den_w           => is_data_reg_w,
+        den_r           => is_data_reg_r,
+        reg_data_out    => reg_data_out
+    );
+    	
+DHT11_S00_AXI_IntRegs_inst: entity work.DHT11_S00_AXI_IntRegs
+	generic map (
+		C_S_AXI_DATA_WIDTH	=> C_S_AXI_DATA_WIDTH,
+		C_S_AXI_ADDR_WIDTH	=> C_S_AXI_ADDR_WIDTH,
+		C_NUM_OF_INTR	    => C_NUM_OF_INTR,
+		C_INTR_SENSITIVITY	=> C_INTR_SENSITIVITY,
+		C_INTR_ACTIVE_STATE	=> C_INTR_ACTIVE_STATE,
+		C_IRQ_SENSITIVITY	=> C_IRQ_SENSITIVITY,
+		C_IRQ_ACTIVE_STATE	=> C_IRQ_ACTIVE_STATE
+	)
+	port map (
+        USER_INTR           => U_INTR,
+		irq	                => irq,
+                            
+		S_AXI_ACLK	        => S_AXI_ACLK,
+		S_AXI_ARESETN	    => S_AXI_ARESETN, 
+		S_AXI_WDATA         => S_AXI_WDATA,
+        axi_awaddr          => axi_awaddr,
+        axi_araddr          => axi_araddr,
+        den_w               => is_int_reg_w,
+        den_r               => is_int_reg_r,
+        reg_int_out         => reg_int_out
+    );
+	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
+	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
+
 	-- Implement axi_awready generation
 	-- axi_awready is asserted for one S_AXI_ACLK clock cycle when both
 	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
 	-- de-asserted when reset is low.
-
 	process (S_AXI_ACLK)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -184,7 +250,6 @@ begin
 	-- Implement axi_awaddr latching
 	-- This process is used to latch the address when both 
 	-- S_AXI_AWVALID and S_AXI_WVALID are valid. 
-
 	process (S_AXI_ACLK)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -203,7 +268,6 @@ begin
 	-- axi_wready is asserted for one S_AXI_ACLK clock cycle when both
 	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_wready is 
 	-- de-asserted when reset is low. 
-
 	process (S_AXI_ACLK)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -223,78 +287,11 @@ begin
 	  end if;
 	end process; 
 
-	-- Implement memory mapped register select and write logic generation
-	-- The write data is accepted and written to memory mapped registers when
-	-- axi_awready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted. Write strobes are used to
-	-- select byte enables of slave registers while writing.
-	-- These registers are cleared when reset (active low) is applied.
-	-- Slave register write enable is asserted when valid address and data are available
-	-- and the slave is ready to accept the write address and write data.
-	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
-
-	process (S_AXI_ACLK)
-	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0); 
-	begin
-	  if rising_edge(S_AXI_ACLK) then 
-	    if S_AXI_ARESETN = '0' then
---	      slv_reg0 <= (others => '0');
---	      slv_reg1 <= (others => '0');
-	      slv_reg2 <= (others => '0');
-	      slv_reg3 <= (others => '0');
-	    else
-	      loc_addr := axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
-	      if (slv_reg_wren = '1') then
-	        case loc_addr is
-             -- slv_reg0 and 1 will not written to from AXI, read-only
---	          when b"00" =>
---	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
---	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
---	                -- Respective byte enables are asserted as per write strobes                   
---	                -- slave registor 0
---	                slv_reg0(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
---	              end if;
---	            end loop;
---	          when b"01" =>
---	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
---	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
---	                -- Respective byte enables are asserted as per write strobes                   
---	                -- slave registor 1
---	                slv_reg1(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
---	              end if;
---	            end loop;
-	          when b"10" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave registor 2
-	                slv_reg2(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when b"11" =>
-	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
-	                -- Respective byte enables are asserted as per write strobes                   
-	                -- slave registor 3
-	                slv_reg3(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-	              end if;
-	            end loop;
-	          when others =>
---	            slv_reg0 <= slv_reg0;
---	            slv_reg1 <= slv_reg1;
-	            slv_reg2 <= slv_reg2;
-	            slv_reg3 <= slv_reg3;
-	        end case;
-	      end if;
-	    end if;
-	  end if;                   
-	end process; 
-
 	-- Implement write response logic generation
 	-- The write response and response valid signals are asserted by the slave 
 	-- when axi_wready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted.  
 	-- This marks the acceptance of address and indicates the status of 
 	-- write transaction.
-
 	process (S_AXI_ACLK)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -318,7 +315,6 @@ begin
 	-- de-asserted when reset (active low) is asserted. 
 	-- The read address is also latched when S_AXI_ARVALID is 
 	-- asserted. axi_araddr is reset to zero on reset assertion.
-
 	process (S_AXI_ACLK)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -365,30 +361,6 @@ begin
 	  end if;
 	end process;
 
-	-- Implement memory mapped register select and read logic generation
-	-- Slave register read enable is asserted when valid address is available
-	-- and the slave is ready to accept the read address.
-	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
-
-	process (slv_reg0, slv_reg1, slv_reg2, slv_reg3, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
-	variable loc_addr :std_logic_vector(OPT_MEM_ADDR_BITS downto 0);
-	begin
-	    -- Address decoding for reading registers
-	    loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
-	    case loc_addr is
-	      when b"00" =>
-	        reg_data_out <= slv_reg0;
-	      when b"01" =>
-	        reg_data_out <= slv_reg1;
-	      when b"10" =>
-	        reg_data_out <= slv_reg2;
-	      when b"11" =>
-	        reg_data_out <= slv_reg3;
-	      when others =>
-	        reg_data_out  <= (others => '0');
-	    end case;
-	end process; 
-
 	-- Output register or memory read data
 	process( S_AXI_ACLK ) is
 	begin
@@ -396,53 +368,20 @@ begin
 	    if ( S_AXI_ARESETN = '0' ) then
 	      axi_rdata  <= (others => '0');
 	    else
-	      if (slv_reg_rden = '1') then
+	      if (is_data_reg_r = '1') then
 	        -- When there is a valid read address (S_AXI_ARVALID) with 
 	        -- acceptance of read address by the slave (axi_arready), 
 	        -- output the read dada 
 	        -- Read address mux
 	          axi_rdata <= reg_data_out;     -- register read data
+	      elsif (is_int_reg_r = '1') then
+	          axi_rdata <= reg_int_out;
+	      else
+	          axi_rdata <= (others => '0');
 	      end if;   
 	    end if;
 	  end if;
 	end process;
 
 
-	-- Add user logic here
-    -- write to register 3 to transport status
-	wr_out_data: process (S_AXI_ACLK)
-	begin
-	  if rising_edge(S_AXI_ACLK) then 
-	    if S_AXI_ARESETN = '0' then
-	      slv_reg0 <= (others => '0');
-	      slv_reg1 <= (others => '0');
-	    else
-	      if U_RD_TICK = '1' then
-            slv_reg0 <= U_VALUES;
-            slv_reg1(C_U_STATUS_WIDTH-1 downto 0) <= U_STATUS;
-            slv_reg1(C_S_AXI_DATA_WIDTH-1 downto C_U_STATUS_WIDTH) <= slv_reg1(C_S_AXI_DATA_WIDTH-1 downto C_U_STATUS_WIDTH);  
-          else
-            slv_reg0 <= slv_reg0;
-            slv_reg1 <= slv_reg1;
-          end if;
-        end if;
-      end if;
-    end process wr_out_data;
-    
-    rd_tick_gen: process(S_AXI_ACLK)
-    begin
-	  if rising_edge(S_AXI_ACLK) then 
-	    if S_AXI_ARESETN = '0' then
-	      wren_dly <= '0';
-	    else
-          if slv_reg_wren = '1' then
-            wren_dly <= '1';
-          else
-            wren_dly <= '0';
-          end if;
-        end if;
-      end if; 
-    end process rd_tick_gen;
-	-- User logic ends
-    
 end arch_imp;

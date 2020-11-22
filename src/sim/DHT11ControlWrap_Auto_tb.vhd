@@ -64,6 +64,7 @@ signal U_STATUS:        std_logic_vector(7 downto 0);
 signal U_VALUES:        std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
 signal U_WR_TICK:       std_logic := '0';
 signal U_RD_TICK:       std_logic;
+signal U_INTR:          std_logic_vector(1 downto 0);
 signal dhtInSig:        std_logic;
 signal dhtOutSig:       std_logic;
 
@@ -139,6 +140,7 @@ uut: entity work.DHT11Wrapper
         U_VALUES    => U_VALUES,
         U_WR_TICK   => U_WR_TICK,
         U_RD_TICK   => U_RD_TICK,
+        U_INTR      => U_INTR,
         dhtInSig    => dhtInSig,
         dhtOutSig   => dhtOutSig
     );
