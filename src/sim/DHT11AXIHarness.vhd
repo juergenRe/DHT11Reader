@@ -28,11 +28,17 @@ use work.AXISimuTestDefs.ALL;
 
 -- Program is oriented at structured test bench at "https://www.edaplayground.com/x/328c"
 
-entity DHT11AXI_tb is
---  Port ( );
-end DHT11AXI_tb;
+entity DHT11AXIHarness is
+	port (
+	    StimDone:  out boolean;				-- stimulus abstract signals
+	    StimTrans: in t_testData;
+	    StopClock: in boolean;				-- clock generator control
+	    MonTrans:  out t_testData			-- monitor abstract signals
+    );
 
-architecture Behavioral of DHT11AXI_tb is
+end DHT11AXIHarness;
+
+architecture Behavioral of DHT11AXIHarness is
    -- Clock period definitions
 constant clk_period:    time := 10 ns;
 
@@ -60,6 +66,7 @@ signal reset:           std_logic := '0';
 signal U_CONTROL:       std_logic_vector(1 downto 0) := "00";
 signal U_STATUS:        std_logic_vector(7 downto 0);
 signal U_VALUES:        std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
+signal U_INTR:          std_logic_vector(C_NUM_OF_INTR-1 downto 0);
 signal U_WR_TICK:       std_logic := '0';
 signal U_RD_TICK:       std_logic;
 signal irq:             std_logic;
@@ -107,7 +114,7 @@ uut: entity work.DHT11_S00_AXI
         U_CONTROL       => U_CONTROL,       
         U_STATUS        => U_STATUS, 
         U_VALUES        => U_VALUES, 
-	    U_INTR          => U_STATUS(3 downto 1),
+	    U_INTR          => U_INTR,
         U_WR_TICK       => U_WR_TICK, 
 		U_RD_TICK       => U_RD_TICK,
 		irq             => irq,
@@ -137,109 +144,57 @@ uut: entity work.DHT11_S00_AXI
 
  -------------------------------------------------------------------   
  -- Clock process definitions                                            
-    clk_process :process
+    clk_process: process
 	begin
-		clk <= '0';
-		wait for clk_period/2;
-		clk <= '1';
-		wait for clk_period/2;
+	   while not StopClock loop
+            clk <= '0';
+            wait for clk_period/2;
+            clk <= '1';
+            wait for clk_period/2;
+       end loop;
+       wait;
 	end process;
+	
+	uut_drv: entity work.UUTDriver
+	generic map(
+        C_U_STATUS_WIDTH    => C_U_STATUS_WIDTH,
+		C_S_AXI_DATA_WIDTH	=> C_S_AXI_DATA_WIDTH,
+		C_S_AXI_ADDR_WIDTH	=> C_S_AXI_ADDR_WIDTH,
+		C_NUM_OF_INTR	    => C_NUM_OF_INTR
+	)
+    port map(
+        StimDone        => StimDone,
+        StimTrans       => StimTrans,
+       
+        U_CONTROL       => U_CONTROL,
+        U_STATUS        => U_STATUS,
+        U_VALUES        => U_VALUES,
+        U_INTR          => U_INTR,
+		U_WR_TICK       => U_WR_TICK,
+        U_RD_TICK       => U_RD_TICK,
 
-   -------------------------------------------------------------------
-   -- Stimulus process
-    stim_proc: process
-        variable data:      std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-        
-        procedure setResult(values: in std_logic_vector; status: in std_logic_vector) is
-        begin
-            U_VALUES <= values;
-            U_STATUS <= status;
-            wait until rising_edge(clk);
-            U_RD_TICK <= '1';
-            wait until rising_edge(clk);
-            U_RD_TICK <= '0';
-        end procedure setResult;
-        
-        procedure readData( addr: in integer; data: out std_logic_vector) is
-        begin
-            wait until rising_edge(clk);
-            s00_axi_araddr <= std_logic_vector(to_unsigned(addr, C_S_AXI_ADDR_WIDTH));
-            wait until rising_edge(clk);
-            s00_axi_arvalid <= '1';
-            s00_axi_rready <= '1';
-            wait until s00_axi_arready = '1';
-            wait until rising_edge(clk);
-            s00_axi_arvalid <= '0';
-            wait until s00_axi_rvalid = '1';
-            wait until rising_edge(clk);
-            data := s00_axi_rdata;            
-            wait until rising_edge(clk);
-            wait for 1ns;
-            wait until rising_edge(clk);
-            s00_axi_rready <= '0';
-        end readData;
-    
-        procedure writeData( addr: in integer; data: in std_logic_vector) is
-        begin
-            wait until rising_edge(clk);
-            s00_axi_awaddr <= std_logic_vector(to_unsigned(addr, C_S_AXI_ADDR_WIDTH));
-            wait until rising_edge(clk);
-            s00_axi_awvalid <= '1';
-            s00_axi_wready <= '1';
-            wait until s00_axi_awready = '1';
-            wait until rising_edge(clk);
-            s00_axi_awvalid <= '0';
-            wait until rising_edge(clk);
-            s00_axi_wdata <= data;            
-            wait until rising_edge(clk);
-            s00_axi_wvalid <= '1';
-            wait until s00_axi_wready = '1';
-            wait until rising_edge(clk);
-            s00_axi_wvalid <= '0';
-            wait until rising_edge(clk);
-            s00_axi_wready <= '0';
-        end writeData;
-    
-    begin
-        s00_axi_awaddr <= (others => '0');
-        s00_axi_araddr <= (others => '0');
-        s00_axi_awprot <= "001";
-        s00_axi_arprot <= "001";
-        s00_axi_awvalid <= '0';
-        s00_axi_arvalid <= '0';
-        s00_axi_wdata <= (others => '0');
-        s00_axi_wstrb <= (others => '0');
-        s00_axi_wvalid <= '0';
-        s00_axi_bready <= '0';
-        s00_axi_rready <= '0';
-        U_VALUES <= (others => '0');
-        U_STATUS <= (others => '0');
-        U_CONTROL <= (others => '0');
-        U_WR_TICK <= '0';
-        U_RD_TICK <= '0';
-        
-        axi_readData <= (others => '0');
-        
-        wait for 50ns;
-        s00_axi_aresetn <= '0';
-        wait for 100ns;
-        s00_axi_aresetn <= '1';
-        
-        setResult(x"12345678", x"02");
-        wait for 100ns;
+		S_AXI_ACLK      => clk,
+		S_AXI_ARESETN   => s00_axi_aresetn,
+		S_AXI_AWADDR    => s00_axi_awaddr,	 
+		S_AXI_AWPROT    => s00_axi_awprot,	 
+		S_AXI_AWVALID   => s00_axi_awvalid,
+		S_AXI_AWREADY   => s00_axi_awready,
+		S_AXI_WDATA     => s00_axi_wdata,
+		S_AXI_WSTRB     => s00_axi_wstrb,
+		S_AXI_WVALID    => s00_axi_wvalid,	 
+		S_AXI_WREADY    => s00_axi_wready,	 
+		S_AXI_BRESP     => s00_axi_bresp,
+		S_AXI_BVALID    => s00_axi_bvalid,	 
+		S_AXI_BREADY    => s00_axi_bready,  
+		S_AXI_ARADDR    => s00_axi_araddr,  
+		S_AXI_ARPROT    => s00_axi_arprot,  
+		S_AXI_ARVALID   => s00_axi_arvalid,
+		S_AXI_ARREADY   => s00_axi_arready,
+		S_AXI_RDATA     => s00_axi_rdata,
+		S_AXI_RRESP     => s00_axi_rresp,
+		S_AXI_RVALID    => s00_axi_rvalid,	 
+		S_AXI_RREADY    => s00_axi_rready,   
+		irq             => irq
+    );
 
-        readData(C_STATUS_REG, data);
-        axi_readData <= data;
-        wait for 50ns;
-
-        readData(C_DATA_REG, data);
-        axi_readData <= data;
-        wait for 50ns;
-
-        readData(C_STATUS_REG, data);
-        axi_readData <= data;
-        
-        wait for 1us;
-        
-    end process;
 end Behavioral;
