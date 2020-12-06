@@ -72,6 +72,7 @@ architecture arch_imp of DHT11Reader is
     constant PWRONDLY       : integer := 21;
     constant C_DREG_WIDTH   : integer := 2;     -- addresses 00..1F are reserved for data registers
     constant C_IREG_WIDTH   : integer := 3;     -- addresses 20..3F are reserved for interrupt registers
+    constant C_UP_INT_BIT   : integer := 2;
     
     signal wr_tick          : std_logic;
     signal reset            : std_logic;
@@ -101,7 +102,7 @@ DHT11_S00_AXI_inst: entity work.DHT11_S00_AXI
 	    U_CONTROL       => act_control,
 	    U_STATUS        => act_status,
 	    U_VALUES        => act_values,
-	    U_INTR          => act_status(3 downto 1),
+	    U_INTR          => act_status(C_UP_INT_BIT downto C_UP_INT_BIT - (C_NUM_OF_INTR -1)),
 	    U_WR_TICK       => wr_tick,
 	    U_RD_TICK       => rd_tick,
 	    ------------------------------- 

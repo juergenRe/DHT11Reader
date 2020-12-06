@@ -1,4 +1,7 @@
- Line |    TransType |     Int Data |    IntStatus |     ExtData |      ExtAddr |        ExtOp |       Result | Description
-    0              1      305419896            162              0              0              0              0  write int R0/R1                                   
-    1              0              0              0              0              0              1      305419896  read AXI R0                                       
-    2              0              0              0              0              4              1            162  read AXI R1                                       
+ Line |    TransType |     Int Data |    IntStatus |   IntControl |        IntOp |     ExtData |      ExtAddr |        ExtOp |      Result[1] |      Result[2] |      Result[3] | Description
+    0              3             -1            255              0              0    -1515870811              0              0 0              0 0              0 0              0  issue reset                                       
+    1              1      305419896            162              0              2              0              0              0 0              0 0              0 0              0  internal preset R0/R1                             
+    2              2              0              0              0              0              0              0              1 1      305419896 0              0 0              0  read AXI R0                                       
+    3              2              0              0              0              0              0              4              1 1            162 0              0 0              0  read AXI R1                                       
+    4              2              0              0              0              0              1              8              2 0              0 0              0 0              0  write AXI R2                                      
+    5              1              0              0              0              1              1              8              0 0      305419896 0            162 1              1  internal read control                             

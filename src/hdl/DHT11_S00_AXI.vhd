@@ -25,7 +25,7 @@ entity DHT11_S00_AXI is
         -- U_VALUES(15 downto 0):  16 bits for temperature
         U_VALUES    : in std_logic_vector(C_S_AXI_DATA_WIDTH -1 downto 0);
         -- user interrupt entris
-        U_INTR      : in std_logic_vector(C_NUM_OF_INTR downto 0);
+        U_INTR      : in std_logic_vector(C_NUM_OF_INTR-1 downto 0);
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 		U_WR_TICK:  out std_logic;

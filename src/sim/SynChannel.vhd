@@ -34,72 +34,72 @@ use work.AXISimuTestDefs.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity SyncChannel is
-  Port (
-    -- put interface - receives Req 
-    P : in t_testData;
-    pDone : out BOOLEAN;
-    
-    -- get interface - sends Req
-    G : out t_testData;
-    gRequest : in BOOLEAN
-   );
-end SyncChannel;
+entity SynChannel is
+    port (
+        -- put interface - receives Req 
+        p:          in t_testData;
+        pDone:      out boolean;
+        
+        -- get interface - sends Req
+        g:          out t_testData;
+        gRequest:   in boolean
+    );
+end SynChannel;
 
-architecture Behavioral of SyncChannel is
+architecture Behavioral of SynChannel is
 
-  signal count : natural;
-  signal p_trans, g_trans : bit;
+    signal count: natural;
+    signal p_trans, g_trans: bit;
 
 begin
 
-  p_trans <= p'TRANSACTION;
-  g_trans <= gRequest'TRANSACTION;
-  
-  process
-    constant NDEBUG             : BOOLEAN := TRUE;
-    variable pendingRequest     : BOOLEAN := FALSE;
-    variable pendingTransaction : BOOLEAN := FALSE;
-    variable doChannel          : BOOLEAN := false;
-    variable itsDone            : BOOLEAN := TRUE;
-  begin
+    p_trans <= p'TRANSACTION;
+    g_trans <= gRequest'TRANSACTION;
     
-    assert NDEBUG report "awaiting put transaction" severity note;
-      
-    -- Wait for a new transaction to arrive on the put side,
-    -- or for a request on the get side.
-    wait on p'TRANSACTION, gRequest'TRANSACTION;
-      
-    -- both could happen simultaneously
-    if p'TRANSACTION'EVENT then
-      pendingTransaction := true;
-    end if;
-      
-    if gRequest'TRANSACTION'EVENT then
-      pendingRequest := TRUE;
-    end if;
-      
-    if pendingTransaction and pendingRequest then
-      doChannel := true;
-    elsif pendingTransaction and not pendingRequest then
-      wait on gRequest'TRANSACTION;
-      doChannel := true;
-    elsif not pendingTransaction and pendingRequest then
-      wait on p'TRANSACTION;
-      doChannel := true;
-    end if;
-      
-    -- if the request has arrived from the get side, and the 
-    -- new transaction has arrived from the put side, transfer
-    -- the transation from put to get.
-    if doChannel then
-      g <= p;
-      count <= count + 1;
-      pendingTransaction := false;
-      pendingRequest := false;
-      doChannel := false;
-      pdone <= itsDone;
-    end if;
+    process
+        constant NDEBUG             : boolean := TRUE;
+        variable pendingRequest     : boolean := FALSE;
+        variable pendingTransaction : boolean := FALSE;
+        variable doChannel          : boolean := false;
+        variable itsDone            : boolean := TRUE;
+    begin
     
-  end process;    
-end Behavioral;
+        assert NDEBUG report "awaiting put transaction" severity note;
+    
+        -- Wait for a new transaction to arrive on the put side,
+        -- or for a request on the get side.
+        wait on p'TRANSACTION, gRequest'TRANSACTION;
+    
+        -- both could happen simultaneously
+        if p'TRANSACTION'EVENT then
+        pendingTransaction := true;
+        end if;
+        
+        if gRequest'TRANSACTION'EVENT then
+            pendingRequest := TRUE;
+        end if;
+        
+        if pendingTransaction and pendingRequest then
+            doChannel := true;
+        elsif pendingTransaction and not pendingRequest then
+            wait on gRequest'TRANSACTION;
+            doChannel := true;
+        elsif not pendingTransaction and pendingRequest then
+            wait on p'TRANSACTION;
+            doChannel := true;
+        end if;
+        
+        -- if the request has arrived from the get side, and the 
+        -- new transaction has arrived from the put side, transfer
+        -- the transation from put to get.
+        if doChannel then
+            g <= p;
+            count <= count + 1;
+            pendingTransaction := false;
+            pendingRequest := false;
+            doChannel := false;
+            pdone <= itsDone;
+        end if;
+        
+    end process;    
+end architecture Behavioral;

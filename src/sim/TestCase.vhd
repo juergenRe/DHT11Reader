@@ -37,26 +37,30 @@ end entity Testcase;
 
 architecture Behavioral of Testcase is
 
-    signal StimTrans2 : t_testData;
-    signal StimDone2  : boolean;
+    -- buffering of generated stimulans
+    signal StimTransFromGen : t_testData;
+    signal StimDoneToGen  : boolean;
 
 begin      
 
+    -- feed the generated into a queue, output of the queue will give the current test stimulans
+    -- reverse direction will feed the "StimeDone" signal to provide a new stimulans
     channel: entity work.SynChannel
     port map (
-        p           => StimTrans2,
-        pDone       => StimDone2,
+        p           => StimTransFromGen,
+        pDone       => StimDoneToGen,
         g           => StimTrans,
         gRequest    => StimDone
     );
 
+    -- generate test cases and provide them as "StimTrans*"
     GenCases: entity work.GenerateCases 
     generic map (
         filename => filename
     )
     port map ( 
-        StimDone  => StimDone2,
-        StimTrans => StimTrans2,
+        StimDone  => StimDoneToGen,
+        StimTrans => StimTransFromGen,
         EndOfFile => StopClock
     );
 

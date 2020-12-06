@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="63450001fs"></ZoomEndTime>
-      <Cursor1Time time="0fs"></Cursor1Time>
+      <ZoomStartTime time="171737572fs"></ZoomStartTime>
+      <ZoomEndTime time="354082292fs"></ZoomEndTime>
+      <Cursor1Time time="275000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="502"></NameColumnWidth>
-      <ValueColumnWidth column_width="394"></ValueColumnWidth>
+      <ValueColumnWidth column_width="330"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="18" />
+   <WVObjectSize size="45" />
    <wvobject fp_name="/Testbench/DHT11Harness/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -29,57 +29,53 @@
       <obj_property name="ElementShortName">reset</obj_property>
       <obj_property name="ObjectShortName">reset</obj_property>
    </wvobject>
-   <wvobject fp_name="/Testbench/StimDone" type="other">
-      <obj_property name="ElementShortName">StimDone</obj_property>
-      <obj_property name="ObjectShortName">StimDone</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/StimTrans" type="array">
-      <obj_property name="ElementShortName">StimTrans</obj_property>
-      <obj_property name="ObjectShortName">StimTrans</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/MonTrans" type="array">
-      <obj_property name="ElementShortName">MonTrans</obj_property>
-      <obj_property name="ObjectShortName">MonTrans</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/StopClock" type="other">
-      <obj_property name="ElementShortName">StopClock</obj_property>
-      <obj_property name="ObjectShortName">StopClock</obj_property>
-   </wvobject>
-   <wvobject type="divider" fp_name="divider294">
-      <obj_property name="label">TestCase</obj_property>
+   <wvobject fp_name="group170" type="group">
+      <obj_property name="label">Testbench</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/StimDone" type="other">
-      <obj_property name="ElementShortName">StimDone</obj_property>
-      <obj_property name="ObjectShortName">StimDone</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/StopClock" type="other">
-      <obj_property name="ElementShortName">StopClock</obj_property>
-      <obj_property name="ObjectShortName">StopClock</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/StimTrans2" type="array">
-      <obj_property name="ElementShortName">StimTrans2</obj_property>
-      <obj_property name="ObjectShortName">StimTrans2</obj_property>
-   </wvobject>
-   <wvobject type="divider" fp_name="divider298">
-      <obj_property name="label">SynChannel-Transmit td</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/channel/p" type="array">
-      <obj_property name="ElementShortName">p</obj_property>
-      <obj_property name="ObjectShortName">p</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/channel/pDone" type="other">
-      <obj_property name="ElementShortName">pDone</obj_property>
-      <obj_property name="ObjectShortName">pDone</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/channel/g" type="array">
-      <obj_property name="ElementShortName">g</obj_property>
-      <obj_property name="ObjectShortName">g</obj_property>
-   </wvobject>
-   <wvobject fp_name="/Testbench/TCG/channel/gRequest" type="other">
-      <obj_property name="ElementShortName">gRequest</obj_property>
-      <obj_property name="ObjectShortName">gRequest</obj_property>
+      <wvobject fp_name="/Testbench/StimDone" type="other">
+         <obj_property name="ElementShortName">StimDone</obj_property>
+         <obj_property name="ObjectShortName">StimDone</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/StimTrans" type="array">
+         <obj_property name="ElementShortName">StimTrans</obj_property>
+         <obj_property name="ObjectShortName">StimTrans</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/MonTrans" type="array">
+         <obj_property name="ElementShortName">MonTrans</obj_property>
+         <obj_property name="ObjectShortName">MonTrans</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/StopClock" type="other">
+         <obj_property name="ElementShortName">StopClock</obj_property>
+         <obj_property name="ObjectShortName">StopClock</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/DUMP_DATA" type="other">
+         <obj_property name="ElementShortName">DUMP_DATA</obj_property>
+         <obj_property name="ObjectShortName">DUMP_DATA</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/dump_done" type="other">
+         <obj_property name="ElementShortName">dump_done</obj_property>
+         <obj_property name="ObjectShortName">dump_done</obj_property>
+      </wvobject>
+      <wvobject type="divider" fp_name="divider298">
+         <obj_property name="label">SynChannel-Transmit td</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/TCG/channel/p" type="array">
+         <obj_property name="ElementShortName">p</obj_property>
+         <obj_property name="ObjectShortName">p</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/TCG/channel/pDone" type="other">
+         <obj_property name="ElementShortName">pDone</obj_property>
+         <obj_property name="ObjectShortName">pDone</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/TCG/channel/g" type="array">
+         <obj_property name="ElementShortName">g</obj_property>
+         <obj_property name="ObjectShortName">g</obj_property>
+      </wvobject>
+      <wvobject fp_name="/Testbench/TCG/channel/gRequest" type="other">
+         <obj_property name="ElementShortName">gRequest</obj_property>
+         <obj_property name="ObjectShortName">gRequest</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="divider" fp_name="divider303">
       <obj_property name="label">UUTDriver</obj_property>
@@ -92,5 +88,161 @@
    <wvobject fp_name="/Testbench/DHT11Harness/uut_drv/StimTrans" type="array">
       <obj_property name="ElementShortName">StimTrans</obj_property>
       <obj_property name="ObjectShortName">StimTrans</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider37">
+      <obj_property name="label">UUT</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/U_VALUES" type="array">
+      <obj_property name="ElementShortName">U_VALUES[31:0]</obj_property>
+      <obj_property name="ObjectShortName">U_VALUES[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/U_STATUS" type="array">
+      <obj_property name="ElementShortName">U_STATUS[7:0]</obj_property>
+      <obj_property name="ObjectShortName">U_STATUS[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/U_CONTROL" type="array">
+      <obj_property name="ElementShortName">U_CONTROL[1:0]</obj_property>
+      <obj_property name="ObjectShortName">U_CONTROL[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/U_INTR" type="array">
+      <obj_property name="ElementShortName">U_INTR[1:0]</obj_property>
+      <obj_property name="ObjectShortName">U_INTR[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/U_RD_TICK" type="logic">
+      <obj_property name="ElementShortName">U_RD_TICK</obj_property>
+      <obj_property name="ObjectShortName">U_RD_TICK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/U_WR_TICK" type="logic">
+      <obj_property name="ElementShortName">U_WR_TICK</obj_property>
+      <obj_property name="ObjectShortName">U_WR_TICK</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider171">
+      <obj_property name="label">UUT-DataReg</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/DHT11_S00_AXI_DataRegs_inst/axi_araddr" type="array">
+      <obj_property name="ElementShortName">axi_araddr[5:0]</obj_property>
+      <obj_property name="ObjectShortName">axi_araddr[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/DHT11_S00_AXI_DataRegs_inst/axi_awaddr" type="array">
+      <obj_property name="ElementShortName">axi_awaddr[5:0]</obj_property>
+      <obj_property name="ObjectShortName">axi_awaddr[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/DHT11_S00_AXI_DataRegs_inst/slv_reg0" type="array">
+      <obj_property name="ElementShortName">slv_reg0[31:0]</obj_property>
+      <obj_property name="ObjectShortName">slv_reg0[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/DHT11_S00_AXI_DataRegs_inst/slv_reg1" type="array">
+      <obj_property name="ElementShortName">slv_reg1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">slv_reg1[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/DHT11_S00_AXI_DataRegs_inst/slv_reg2" type="array">
+      <obj_property name="ElementShortName">slv_reg2[31:0]</obj_property>
+      <obj_property name="ObjectShortName">slv_reg2[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/DHT11_S00_AXI_DataRegs_inst/slv_reg3" type="array">
+      <obj_property name="ElementShortName">slv_reg3[31:0]</obj_property>
+      <obj_property name="ObjectShortName">slv_reg3[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider178">
+      <obj_property name="label">UUT-Interrupt</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider211">
+      <obj_property name="label">UUT_ADDRESSING</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_ARADDR" type="array">
+      <obj_property name="ElementShortName">S_AXI_ARADDR[5:0]</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_ARADDR[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_ARREADY" type="logic">
+      <obj_property name="ElementShortName">S_AXI_ARREADY</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_ARREADY</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_ARVALID" type="logic">
+      <obj_property name="ElementShortName">S_AXI_ARVALID</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_ARVALID</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_RDATA" type="array">
+      <obj_property name="ElementShortName">S_AXI_RDATA[31:0]</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_RDATA[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_RREADY" type="logic">
+      <obj_property name="ElementShortName">S_AXI_RREADY</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_RREADY</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_RVALID" type="logic">
+      <obj_property name="ElementShortName">S_AXI_RVALID</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_RVALID</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_AWADDR" type="array">
+      <obj_property name="ElementShortName">S_AXI_AWADDR[5:0]</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_AWADDR[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_AWREADY" type="logic">
+      <obj_property name="ElementShortName">S_AXI_AWREADY</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_AWREADY</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_AWVALID" type="logic">
+      <obj_property name="ElementShortName">S_AXI_AWVALID</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_AWVALID</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_WDATA" type="array">
+      <obj_property name="ElementShortName">S_AXI_WDATA[31:0]</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_WDATA[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_WREADY" type="logic">
+      <obj_property name="ElementShortName">S_AXI_WREADY</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_WREADY</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_WVALID" type="logic">
+      <obj_property name="ElementShortName">S_AXI_WVALID</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_WVALID</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_WSTRB" type="array">
+      <obj_property name="ElementShortName">S_AXI_WSTRB[3:0]</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_WSTRB[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/aw_en" type="logic">
+      <obj_property name="ElementShortName">aw_en</obj_property>
+      <obj_property name="ObjectShortName">aw_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_BREADY" type="logic">
+      <obj_property name="ElementShortName">S_AXI_BREADY</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_BREADY</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/S_AXI_BVALID" type="logic">
+      <obj_property name="ElementShortName">S_AXI_BVALID</obj_property>
+      <obj_property name="ObjectShortName">S_AXI_BVALID</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider679">
+      <obj_property name="label">AddressSelection</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/is_data_reg_r" type="logic">
+      <obj_property name="ElementShortName">is_data_reg_r</obj_property>
+      <obj_property name="ObjectShortName">is_data_reg_r</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/is_data_reg_w" type="logic">
+      <obj_property name="ElementShortName">is_data_reg_w</obj_property>
+      <obj_property name="ObjectShortName">is_data_reg_w</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/is_int_reg_r" type="logic">
+      <obj_property name="ElementShortName">is_int_reg_r</obj_property>
+      <obj_property name="ObjectShortName">is_int_reg_r</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/is_int_reg_w" type="logic">
+      <obj_property name="ElementShortName">is_int_reg_w</obj_property>
+      <obj_property name="ObjectShortName">is_int_reg_w</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/is_int_reg_selr" type="logic">
+      <obj_property name="ElementShortName">is_int_reg_selr</obj_property>
+      <obj_property name="ObjectShortName">is_int_reg_selr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut/is_int_reg_selw" type="logic">
+      <obj_property name="ElementShortName">is_int_reg_selw</obj_property>
+      <obj_property name="ObjectShortName">is_int_reg_selw</obj_property>
    </wvobject>
 </wave_config>

@@ -155,6 +155,9 @@ uut: entity work.DHT11_S00_AXI
        wait;
 	end process;
 	
+	reset <= not s00_axi_aresetn;
+	
+	-- driver entity to drive the UUT in a generic way
 	uut_drv: entity work.UUTDriver
 	generic map(
         C_U_STATUS_WIDTH    => C_U_STATUS_WIDTH,
