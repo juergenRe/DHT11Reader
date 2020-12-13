@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="171737572fs"></ZoomStartTime>
-      <ZoomEndTime time="354082292fs"></ZoomEndTime>
-      <Cursor1Time time="275000000fs"></Cursor1Time>
+      <ZoomStartTime time="80000000fs"></ZoomStartTime>
+      <ZoomEndTime time="441600001fs"></ZoomEndTime>
+      <Cursor1Time time="125000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="502"></NameColumnWidth>
-      <ValueColumnWidth column_width="330"></ValueColumnWidth>
+      <ValueColumnWidth column_width="274"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="45" />
+   <WVObjectSize size="59" />
    <wvobject fp_name="/Testbench/DHT11Harness/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -28,6 +28,10 @@
    <wvobject fp_name="/Testbench/DHT11Harness/reset" type="logic">
       <obj_property name="ElementShortName">reset</obj_property>
       <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TrgStart" type="other">
+      <obj_property name="ElementShortName">TrgStart</obj_property>
+      <obj_property name="ObjectShortName">TrgStart</obj_property>
    </wvobject>
    <wvobject fp_name="group170" type="group">
       <obj_property name="label">Testbench</obj_property>
@@ -77,6 +81,18 @@
          <obj_property name="ObjectShortName">gRequest</obj_property>
       </wvobject>
    </wvobject>
+   <wvobject type="divider" fp_name="divider574">
+      <obj_property name="label">TestCase</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TCG/StimTranstoUUT" type="array">
+      <obj_property name="ElementShortName">StimTranstoUUT</obj_property>
+      <obj_property name="ObjectShortName">StimTranstoUUT</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TCG/StimTransFromGen" type="array">
+      <obj_property name="ElementShortName">StimTransFromGen</obj_property>
+      <obj_property name="ObjectShortName">StimTransFromGen</obj_property>
+   </wvobject>
    <wvobject type="divider" fp_name="divider303">
       <obj_property name="label">UUTDriver</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -88,6 +104,46 @@
    <wvobject fp_name="/Testbench/DHT11Harness/uut_drv/StimTrans" type="array">
       <obj_property name="ElementShortName">StimTrans</obj_property>
       <obj_property name="ObjectShortName">StimTrans</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut_drv/trgStimTrans" type="logic">
+      <obj_property name="ElementShortName">trgStimTrans</obj_property>
+      <obj_property name="ObjectShortName">trgStimTrans</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider115">
+      <obj_property name="label">UUTMonitor</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut_mon/MonTrans" type="array">
+      <obj_property name="ElementShortName">MonTrans</obj_property>
+      <obj_property name="ObjectShortName">MonTrans</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut_mon/trgStimTrans" type="logic">
+      <obj_property name="ElementShortName">trgStimTrans</obj_property>
+      <obj_property name="ObjectShortName">trgStimTrans</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/DHT11Harness/uut_mon/trgMonTrans" type="logic">
+      <obj_property name="ElementShortName">trgMonTrans</obj_property>
+      <obj_property name="ObjectShortName">trgMonTrans</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider439">
+      <obj_property name="label">Checker</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TCG/Checker/actDataTransaction" type="logic">
+      <obj_property name="ElementShortName">actDataTransaction</obj_property>
+      <obj_property name="ObjectShortName">actDataTransaction</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TCG/Checker/actualData" type="array">
+      <obj_property name="ElementShortName">actualData</obj_property>
+      <obj_property name="ObjectShortName">actualData</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TCG/Checker/expDataTransaction" type="logic">
+      <obj_property name="ElementShortName">expDataTransaction</obj_property>
+      <obj_property name="ObjectShortName">expDataTransaction</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Testbench/TCG/Checker/expectedData" type="array">
+      <obj_property name="ElementShortName">expectedData</obj_property>
+      <obj_property name="ObjectShortName">expectedData</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider37">
       <obj_property name="label">UUT</obj_property>

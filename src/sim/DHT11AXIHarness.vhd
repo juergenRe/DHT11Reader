@@ -30,6 +30,7 @@ use work.AXISimuTestDefs.ALL;
 
 entity DHT11AXIHarness is
 	port (
+        TrgStart:  in bit;
 	    StimDone:  out boolean;				-- stimulus abstract signals
 	    StimTrans: in t_testData;
 	    StopClock: in boolean;				-- clock generator control
@@ -97,6 +98,7 @@ signal s00_axi_rready	: std_logic;
 ---------------------------------------
 -- values behind AXI
 signal axi_readData	    : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+signal trgTrans         : std_logic_vector(C_NB_TRIGGERS-1 downto 0);
 
 begin
 uut: entity work.DHT11_S00_AXI
@@ -166,7 +168,52 @@ uut: entity work.DHT11_S00_AXI
 		C_NUM_OF_INTR	    => C_NUM_OF_INTR
 	)
     port map(
+        TrgStart        => TrgStart,
         StimDone        => StimDone,
+        StimTrans       => StimTrans,
+       
+        U_CONTROL       => U_CONTROL,
+        U_STATUS        => U_STATUS,
+        U_VALUES        => U_VALUES,
+        U_INTR          => U_INTR,
+		U_WR_TICK       => U_WR_TICK,
+        U_RD_TICK       => U_RD_TICK,
+
+		S_AXI_ACLK      => clk,
+		S_AXI_ARESETN   => s00_axi_aresetn,
+		S_AXI_AWADDR    => s00_axi_awaddr,	 
+		S_AXI_AWPROT    => s00_axi_awprot,	 
+		S_AXI_AWVALID   => s00_axi_awvalid,
+		S_AXI_AWREADY   => s00_axi_awready,
+		S_AXI_WDATA     => s00_axi_wdata,
+		S_AXI_WSTRB     => s00_axi_wstrb,
+		S_AXI_WVALID    => s00_axi_wvalid,	 
+		S_AXI_WREADY    => s00_axi_wready,	 
+		S_AXI_BRESP     => s00_axi_bresp,
+		S_AXI_BVALID    => s00_axi_bvalid,	 
+		S_AXI_BREADY    => s00_axi_bready,  
+		S_AXI_ARADDR    => s00_axi_araddr,  
+		S_AXI_ARPROT    => s00_axi_arprot,  
+		S_AXI_ARVALID   => s00_axi_arvalid,
+		S_AXI_ARREADY   => s00_axi_arready,
+		S_AXI_RDATA     => s00_axi_rdata,
+		S_AXI_RRESP     => s00_axi_rresp,
+		S_AXI_RVALID    => s00_axi_rvalid,	 
+		S_AXI_RREADY    => s00_axi_rready,   
+		irq             => irq
+    );
+
+	-- monitor entity to monitor the UUT in a generic way
+	uut_mon: entity work.UUTMonitor
+	generic map(
+        C_U_STATUS_WIDTH    => C_U_STATUS_WIDTH,
+		C_S_AXI_DATA_WIDTH	=> C_S_AXI_DATA_WIDTH,
+		C_S_AXI_ADDR_WIDTH	=> C_S_AXI_ADDR_WIDTH,
+		C_NUM_OF_INTR	    => C_NUM_OF_INTR
+	)
+    port map(
+        TrgStart        => TrgStart,
+        MonTrans        => MonTrans,
         StimTrans       => StimTrans,
        
         U_CONTROL       => U_CONTROL,

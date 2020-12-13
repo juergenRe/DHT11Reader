@@ -45,6 +45,7 @@ entity UUTDriver is
 		C_NUM_OF_INTR	    : integer := 2
 	);
     port (
+        TrgStart:       in bit;
         StimDone:       out BOOLEAN;
         StimTrans:      in t_testData;
         
@@ -83,7 +84,7 @@ end UUTDriver;
 architecture Behavioral of UUTDriver is
     constant C_UP_INT_BIT   : integer := 2;
 
-    signal StimTransTrans:      bit;
+    signal trgStimTrans:        std_logic;
     signal clk:                 std_logic;
 
     signal s00_axi_araddr:      std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -114,6 +115,7 @@ begin
     -- handle bready/bvalid signals: just short circuit them
     S_AXI_BREADY    <= s00_axi_bready;
     s00_axi_bready  <= S_AXI_BVALID; 
+
     
     drive_proc: process
         variable td: t_testData;
@@ -178,7 +180,7 @@ begin
         
     ------------------------------------------------------------------------------
     begin
-        -- setting defualt values
+        -- setting default values
         U_VALUES <= (others => 'Z');
         U_STATUS <= (others => 'Z');
         U_INTR <= (others => 'Z');
@@ -194,8 +196,14 @@ begin
         s00_axi_wvalid <= '0';
         s00_axi_wdata <= (others => '0');
         
+        trgStimTrans <= '0';
+        if TrgStart = '0' then
+            wrOut("DRV: Wait on TrgStart");
+            wait until TrgStart = '1';  -- do not operate when not yet started
+        end if;
         get(td, StimTrans, StimDone, StimTrans'Transaction);
-        wrOut("--- " & td.desc);
+        trgStimTrans <= '1';
+        wrOut("DRV: ---> " & td.desc);
         
         -- Reset Transaction
         if td.trans = TransReset then
@@ -210,11 +218,11 @@ begin
             if td.extData.op = Read then
                 readExtData(td.extData.addr, axiData);
                 
-                -- check results; external transactions will return only one value corresponding to the first result entry
-                res := td.expResult(1);
-                if res.f = true then
-                    assert(res.res = axiData) report "read value unequal: exp: 0x" & to_hex_string(res.res) & " act: 0x" & to_hex_string(axiData);
-                end if; 
+--                -- check results; external transactions will return only one value corresponding to the first result entry
+--                res := td.expResult(1);
+--                if res.f = true then
+--                    assert(res.res = axiData) report "read value unequal: exp: 0x" & to_hex_string(res.res) & " act: 0x" & to_hex_string(axiData);
+--                end if; 
             elsif td.extData.op = Write then
                 writeExtData(td.extData.addr, td.extData.data);
             else

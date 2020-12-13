@@ -35,6 +35,14 @@ constant C_AXI_ADDR_WIDTH	: integer := 6;    -- Width of S_AXI address bus
 constant C_INT_DATA_WIDTH	: integer := 32;   
 constant C_INT_STATUS_WIDTH	: integer := 8;   
 
+constant C_BIT_OP:            integer := 0;
+constant C_BIT_RESET:         integer := 1;
+constant C_BIT_EXTTR:         integer := 2;
+constant C_BIT_INTTR:         integer := 3;
+constant C_BIT_NEXT:          integer := 4;  -- next operation to be addressed
+constant C_NB_TRIGGERS:       integer := C_BIT_NEXT;
+
+
 type t_transaction is (TransNone, TransExt, TransInt, TransReset);
 type t_operation is (None, Read, Write);
 
@@ -58,7 +66,10 @@ type t_result is record
     f           : boolean;
     res         : std_logic_vector(C_AXI_DATA_WIDTH-1 downto 0);
 end record;    
-    
+
+-- results[1]: either AXI-RData or U_VALUES
+-- results[2]: U_STATUS
+-- results[3]: UCONTROL
 type t_results is array(1 to 3) of t_result;
 
 type t_testData is record
@@ -69,13 +80,22 @@ type t_testData is record
     desc        : string(1 to 40);
 end record;
 
+-- empty test data as a reference for init
+constant empty_test: t_testData := (
+      trans     => TransReset,
+      intData   => (data => x"FFFFFFFF", status => x"FF", control => "00", op => None),
+      extData   => (data => x"A5A5A5A5", addr => "000000", op => None),
+      expResult => ( (f => false, res => x"00000000"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "                                        "
+);    
+
 type t_test_ary is array (natural range <>) of t_testData;
 constant test_data : t_test_ary := (
     0       => (            -- set interndata
       trans     => TransReset,
       intData   => (data => x"FFFFFFFF", status => x"FF", control => "00", op => None),
       extData   => (data => x"A5A5A5A5", addr => "000000", op => None),
-      expResult => ( (f => false, res => x"00000000"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      expResult => ( (f => false, res => x"00000000"), (f => false, res => x"00000000"), (f => true, res => x"00000000")), 
       desc      => "issue reset                             "),
     1       => (            -- set interndata
       trans     => TransInt,
@@ -112,6 +132,8 @@ constant test_data : t_test_ary := (
     -- function prototypes
     procedure put(constant reqToPut: in t_testData; signal req: out t_testData; signal hs: in bit);
     procedure get(variable reqGot: out t_testData; signal req: in t_testData; signal dataReady: out Boolean; signal hs: in bit);
+    procedure nb_put(constant reqToPut: in t_testData; signal req: out t_testData);
+    procedure nb_get(variable reqGot: out t_testData; signal req: in t_testData);
 
     function t_transaction_to_integer(constant tr: in t_transaction) return integer;
     function t_operation_to_integer(constant op: in t_operation) return integer;
@@ -120,6 +142,8 @@ constant test_data : t_test_ary := (
     
     procedure writeTestData(constant fn: in string; constant tdary: in t_test_ary);
     procedure readTdElement(variable row: inout line; variable td: out t_testData);
+    
+    procedure MonDataPut(constant d1: in std_logic_vector; constant d2: in std_logic_vector; constant d3: in std_logic_vector; constant iSlot: in integer; signal mr: out t_testData);
 
 end AXISimuTestDefs;
 
@@ -136,6 +160,16 @@ package body AXISimuTestDefs is
         wait on hs;
         reqGot := req;
     end; 
+    
+    procedure nb_put(constant reqToPut: in t_testData; signal req: out t_testData) is
+    begin
+        req <= reqToPut;
+    end;
+    
+    procedure nb_get(variable reqGot: out t_testData; signal req: in t_testData) is
+    begin
+        reqGot := req;
+    end;
     
     function t_transaction_to_integer(constant tr: in t_transaction) return integer is 
     begin
@@ -250,14 +284,14 @@ package body AXISimuTestDefs is
     end;
     
     procedure readTdElement(variable row: inout line; variable td: out t_testData) is
-        variable lineNr:    integer;
+        variable testNr:    integer;
         variable intData:   integer;
         variable strData:   string(1 to 50); 
         variable ra:        t_results;
         variable res:       t_result;
     begin
-        read(row, lineNr);
-        wrOut("   readTDElement of line " & integer'image(lineNr));
+        read(row, testNr);
+--        wrOut("   readTDElement of test # " & integer'image(testNr));
         
         td := ( 
             trans     => TransNone,
@@ -297,4 +331,20 @@ package body AXISimuTestDefs is
         td.desc := strData(1 to td.desc'length);
     end;
     
+    procedure MonDataPut(constant d1: in std_logic_vector; constant d2: in std_logic_vector; constant d3: in std_logic_vector; constant iSlot: in integer; signal mr: out t_testData) is
+        variable vmr: t_testData := empty_test;
+    begin
+        vmr.expResult(1).res := d1;
+        vmr.expResult(2).res := d2;
+        vmr.expResult(3).res := d3;
+        if iSlot = 1 then
+            vmr.expResult(1).f := true;
+        elsif iSlot = 2 then
+            vmr.expResult(2).f := true;
+        elsif iSlot = 3 then
+            vmr.expResult(3).f := true;
+        end if;
+        mr <= vmr;
+    end;
+
 end AXISimuTestDefs;

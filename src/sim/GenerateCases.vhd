@@ -25,15 +25,17 @@ use STD.TEXTIO.all;
 use IEEE.STD_LOGIC_TEXTIO.all;
 
 use work.AXISimuTestDefs.ALL;
+use work.GenFuncLib.ALL;
 
 entity GenerateCases is 
     generic (
         Filename : string
     );
     port (
-        StimDone : in boolean;
-        StimTrans : out t_testData;
-        EndOfFile : out boolean);
+        TrgStart:   in bit;
+        StimDone:   in boolean;
+        StimTrans:  out t_testData;
+        EndOfFile:  out boolean);
     end entity GenerateCases;
 
 architecture Behavioral of GenerateCases is
@@ -42,12 +44,16 @@ begin
     StimDoneTrans <= StimDone'TRANSACTION;
 
     genCase_proc: process
-        file f:             text open READ_MODE is Filename;
+        file f:             text; 
         variable row:       line;
         variable TData:     t_testData;
 --        variable VData: DataT;
     begin
-        EndOfFile <= FALSE;
+        wait until TrgStart = '1';
+        wrOut(" ");
+        wrOut("GEN: --- Start generating test cases ---");
+        file_open(f, Filename, read_mode);
+        EndOfFile <= false;
         readline(f, row);           -- read header
         while not endfile(f) loop
             
@@ -56,7 +62,7 @@ begin
             put( TData, StimTrans, StimDone'TRANSACTION);      
         end loop;
         wait for 100 ns;
-        EndOfFile <= TRUE;
+        EndOfFile <= true;
         wait;
     end process genCase_proc;
 

@@ -25,44 +25,60 @@ use work.AXISimuTestDefs.ALL;
 
 entity Testcase is
     generic (
-        filename : string := "none.txt"
+        StimFilename:   string := "?";
+        ResultFilename: string := "?"
     );
     port (
-        StimDone  : in  boolean;
-        StimTrans : out t_testData;
-        StopClock : out boolean;
-        MonTrans  : in  t_testData
+        TrgStart:   in bit;
+        StimDone:   in  boolean;
+        StimTrans:  out t_testData;
+        StopClock:  out boolean;
+        MonTrans:   in  t_testData
     );
 end entity Testcase;
 
 architecture Behavioral of Testcase is
 
     -- buffering of generated stimulans
-    signal StimTransFromGen : t_testData;
-    signal StimDoneToGen  : boolean;
+    signal StimTransFromGen:    t_testData;
+    signal StimTranstoUUT:      t_testData;
+    signal StimDoneToGen:       boolean;
+    signal StopClock_i:         boolean;
 
 begin      
-
+    StimTrans <= StimTranstoUUT;
+    StopClock <= StopClock_i;
+    
     -- feed the generated into a queue, output of the queue will give the current test stimulans
     -- reverse direction will feed the "StimeDone" signal to provide a new stimulans
     channel: entity work.SynChannel
     port map (
         p           => StimTransFromGen,
         pDone       => StimDoneToGen,
-        g           => StimTrans,
+        g           => StimTranstoUUT,
         gRequest    => StimDone
     );
 
     -- generate test cases and provide them as "StimTrans*"
     GenCases: entity work.GenerateCases 
     generic map (
-        filename => filename
+        filename => StimFilename
     )
     port map ( 
+        TrgStart  => TrgStart,
         StimDone  => StimDoneToGen,
         StimTrans => StimTransFromGen,
-        EndOfFile => StopClock
+        EndOfFile => StopClock_i
     );
 
+    Checker: entity work.ResultChecker
+    generic map (
+        filename  => ResultFilename
+    )
+    port map (
+        StopClock       => StopClock_i,
+        expectedData    => StimTranstoUUT,
+        actualData      => MonTrans
+    );
 end architecture Behavioral;
 

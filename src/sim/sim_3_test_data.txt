@@ -1,5 +1,5 @@
  Line |    TransType |     Int Data |    IntStatus |   IntControl |        IntOp |     ExtData |      ExtAddr |        ExtOp |      Result[1] |      Result[2] |      Result[3] | Description
-    0              3             -1            255              0              0    -1515870811              0              0 0              0 0              0 0              0  issue reset                                       
+    0              3             -1            255              0              0    -1515870811              0              0 0              0 0              0 1              0  issue reset                                       
     1              1      305419896            162              0              2              0              0              0 0              0 0              0 0              0  internal preset R0/R1                             
     2              2              0              0              0              0              0              0              1 1      305419896 0              0 0              0  read AXI R0                                       
     3              2              0              0              0              0              0              4              1 1            162 0              0 0              0  read AXI R1                                       
