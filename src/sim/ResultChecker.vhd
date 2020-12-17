@@ -64,7 +64,7 @@ begin
         variable actRes:    std_logic_vector(C_AXI_DATA_WIDTH-1 downto 0);
         variable expRes:    std_logic_vector(C_AXI_DATA_WIDTH-1 downto 0);
         variable result:    boolean;
-        variable sh:        string(1 to 15);
+        variable sh:        string(1 to 10);
         
         procedure writeResult(constant fn: in string; constant s: in string) is
             file f:         text;
@@ -78,6 +78,8 @@ begin
         end;
         
     begin
+        writeResult(filename, "");
+        writeResult(filename, "-------------------------------------------------------------");
         while Stopclock = false loop
             get(expTrans, expectedData, Dummy, expDataTransaction);
             get(actTrans, actualData, Dummy, actDataTransaction);
@@ -85,16 +87,16 @@ begin
             expResAry := expTrans.expResult;
             result := true;
             --wrOut("CHK: -----------------------------------------------");
-            writeResult(filename, "CHK: ---> " & expTrans.desc);
+            writeResult(filename, "CHK:    " & expTrans.desc);
             for i in actResAry'range loop
                 if expResAry(i).f = true then   -- do we have to check?
                     actRes := actResAry(i).res; 
                     expRes := expResAry(i).res;
                     if actRes /= expRes then
                         result := false;
-                        sh := "CHK:   !!! Err ";
+                        sh := "CHK: Err  ";
                     else
-                        sh := "CHK:       OK  "; 
+                        sh := "CHK: OK   "; 
                     end if; 
                     writeResult(filename, sh & "res(" & integer'image(i) & "): exp: 0x" & to_hex_string(expRes) & " act: 0x" & to_hex_string(actRes));
                 end if;

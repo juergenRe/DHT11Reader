@@ -75,6 +75,7 @@ architecture arch_imp of DHT11_S00_AXI_IntRegs is
 begin
 	
 	intr <= USER_INTR;
+	reg_int_out <= reg_data_out;
 	
 	-- Implement memory mapped register select and write logic generation
 	-- The write data is accepted and written to memory mapped registers when
@@ -301,7 +302,7 @@ begin
 	   end if;                                                                         
 	end process;                                                                       
 	                                                                                   
-    -- det_intr(i) will carry rhe signal if a new interrupt has been detected	                                                                                   
+    -- det_intr(i) will carry the signal if a new interrupt has been detected	                                                                                   
 	gen_intr_detection  : for i in 0 to (C_NUM_OF_INTR - 1) generate                   
 	  signal s_irq_lvl: std_logic;                                                     
 	  begin                                                                            

@@ -29,7 +29,7 @@ end Testbench;
 
 architecture Bench of Testbench is
 
-    constant DUMP_DATA:     bit := '0';
+    constant DUMP_DATA:     bit := '1';
     signal   dump_done:     bit := '0';
 
     signal StimDone:        boolean;
@@ -85,6 +85,15 @@ begin
         wait for 100ms;
     end process dump_data_proc;
     
+-- check for end of simulation and stop it
+    chk_end_proc: process
+    begin
+        wait for 10ns;
+        if StopClock = true then
+            wait for 100ns;
+            assert false report "Simulation done" severity failure;
+        end if;
+    end process chk_end_proc;
     
 end architecture Bench;
 

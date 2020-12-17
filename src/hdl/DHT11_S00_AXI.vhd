@@ -153,7 +153,7 @@ begin
     is_int_reg_selw <= '1' when (awaddr_masked = addr_int) else '0';
     is_int_reg_selr <= '1' when (araddr_masked = addr_int) else '0';
     is_int_reg_w    <= is_int_reg_selw and slv_reg_wren;
-    is_int_reg_r    <= is_int_reg_selr and slv_reg_wren;
+    is_int_reg_r    <= is_int_reg_selr and slv_reg_rden;
     is_data_reg_w   <= not is_int_reg_selw and slv_reg_wren;
     is_data_reg_r   <= not is_int_reg_selr and slv_reg_rden;
     

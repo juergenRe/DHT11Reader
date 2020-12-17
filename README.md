@@ -3,18 +3,22 @@ Component to read DHT11 humidity and temperature sensor via AXI-interface.
 
 Created for Vivado 2019.1
 
-Register description:
-- Register 1 (00): (write-only) Bit1: AutoTrigger enable; Bit0: Trigger; 
-- Register 2 (04): (read-only) Status Bit 7:4: actual error; bit 3: unused; bit 2: device ready; bit 1: data ready; bit 0: error
-- Register 3 (08): (read-only) Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
-- Register 4 (0C): unused
+Address spaces:
+  0x00 to 0x1F: reserved for data transfer.
+  0x20 to 0x3F: reserved for interrupt registers
+
+Data register description:
+- Register 1 (00): (W0)   DTA Bits 31..24: Humidity integral; Bits 23..16: Humidity fractional; Bits 15..8:  Temperature integral; Bits  7..0:  Temperature fractional
+- Register 2 (04): (RO)   STA Status Bit 7:4: actual error; bit 3: unused; bit 2: device ready; bit 1: data ready; bit 0: error
+- Register 3 (08): (RO)   CTL Bit1: AutoTrigger enable; Bit0: Trigger; 
+- Register 4 (0C): (R/W)  RES unused
 
 Interrupt support:
-- Register 1 (00): (R/W) Bit 0: Global interrupt enable
-- Register 2 (04): (R/W) Bit 1: Device ready; bit 0: Data available
-- Register 3 (08): (RO): Interrupt status
-- Register 4 (0C): (R/W): Interrupt acknowledge
-- Register 5 (10): (RO): Interrupt pending
+- Register 1 (00): (R/W)  GIE Bit 0: Global interrupt enable
+- Register 2 (04): (R/W)  IER Bit 1: Device ready; bit 0: Data available
+- Register 3 (08): (RO):  IST Interrupt status
+- Register 4 (0C): (WO):  IAC Interrupt acknowledge, will be read always as 0
+- Register 5 (10): (RO):  IPE Interrupt pending
 
 ## Testing projects:
 - DHT11DemoStandAlone: runs as non-BD project in PL to access directly the DHT11 component

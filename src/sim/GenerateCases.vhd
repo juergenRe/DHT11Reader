@@ -39,7 +39,8 @@ entity GenerateCases is
     end entity GenerateCases;
 
 architecture Behavioral of GenerateCases is
-    signal StimDoneTrans : bit;
+    signal StimDoneTrans:   bit;
+    signal Cnt:             integer := -1;         
 begin
     StimDoneTrans <= StimDone'TRANSACTION;
 
@@ -59,7 +60,8 @@ begin
             
             readline(f, row);
             readTdElement(row, TData);
-            put( TData, StimTrans, StimDone'TRANSACTION);      
+            put( TData, StimTrans, StimDone'TRANSACTION); 
+            Cnt <= Cnt + 1;     
         end loop;
         wait for 100 ns;
         EndOfFile <= true;
