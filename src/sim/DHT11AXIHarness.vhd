@@ -47,8 +47,8 @@ constant C_U_STATUS_WIDTH:      integer := 8;
 constant C_S_AXI_DATA_WIDTH:    integer := 32;
 constant C_S_AXI_ADDR_WIDTH:    integer := 6;
 constant C_NUM_OF_INTR:         integer := 2;
-constant C_INTR_SENSITIVITY:    std_logic_vector := x"FFFFFFFF";
-constant C_INTR_ACTIVE_STATE:   std_logic_vector := x"FFFFFFFF";
+constant C_INTR_SENSITIVITY:    std_logic_vector := x"00000000";  -- all edge detected
+constant C_INTR_ACTIVE_STATE:   std_logic_vector := x"FFFFFFFF";  -- all rising edge
 constant C_IRQ_SENSITIVITY:     integer := 1;
 constant C_IRQ_ACTIVE_STATE	:   integer := 1;
 

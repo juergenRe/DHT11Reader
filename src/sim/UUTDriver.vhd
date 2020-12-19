@@ -183,7 +183,7 @@ begin
         -- setting default values
         U_VALUES <= (others => 'Z');
         U_STATUS <= (others => 'Z');
-        U_INTR <= (others => 'Z');
+        --U_INTR <= (others => 'Z');
         U_RD_TICK <= '0';
         S_AXI_ARESETN <= '1';
 

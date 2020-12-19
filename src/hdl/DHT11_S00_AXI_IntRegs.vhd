@@ -49,6 +49,15 @@ architecture arch_imp of DHT11_S00_AXI_IntRegs is
 	                                                                            
 	signal intr	               : std_logic_vector(C_NUM_OF_INTR-1 downto 0);                
 	signal det_intr            : std_logic_vector(C_NUM_OF_INTR-1 downto 0);                
+	                                        
+--    signal intr_edge           : std_logic_vector (C_NUM_OF_INTR-1 downto 0);              
+--    signal intr_ff             : std_logic_vector (C_NUM_OF_INTR-1 downto 0);                
+--    signal intr_ff2            : std_logic_vector (C_NUM_OF_INTR-1 downto 0);  
+--    attribute keep             : string;
+--    attribute keep of intr_ff  : signal is "true";              
+--    attribute keep of intr_ff2 : signal is "true";              
+--    attribute keep of intr_edge: signal is "true";              
+                                    
 	                                                                            
 	signal intr_reg_rden	  : std_logic;                                          
 	signal intr_reg_wren	  : std_logic;                                          
@@ -346,14 +355,15 @@ begin
 	    gen_intr_edge_detect: if (C_INTR_SENSITIVITY(i) = '0') generate                
 	      signal intr_edge : std_logic_vector (C_NUM_OF_INTR-1 downto 0);              
 	      signal intr_ff : std_logic_vector (C_NUM_OF_INTR-1 downto 0);                
-	      signal intr_ff2 : std_logic_vector (C_NUM_OF_INTR-1 downto 0);               
+	      signal intr_ff2 : std_logic_vector (C_NUM_OF_INTR-1 downto 0);  
 	      begin                                                                        
 	        gen_intr_rising_edge_detect: if (C_INTR_ACTIVE_STATE(i) = '1') generate    
 	        begin                                                                      
 	          process( S_AXI_ACLK ) is                                                 
 	            begin                                                                  
 	              if (rising_edge (S_AXI_ACLK)) then                                   
-	                if ( S_AXI_ARESETN = '0' or reg_intr_ack(i) = '1') then            
+--	                if ( S_AXI_ARESETN = '0' or reg_intr_ack(i) = '1') then            
+	                if ( S_AXI_ARESETN = '0') then            
 	                  intr_ff(i) <= '0';                                               
 	                  intr_ff2(i) <= '0';                                              
 	                else                                                               
@@ -383,7 +393,8 @@ begin
 	          process( S_AXI_ACLK ) is                                                 
 	            begin                                                                  
 	              if (rising_edge (S_AXI_ACLK)) then                                   
-	                if ( S_AXI_ARESETN = '0' or reg_intr_ack(i) = '1') then            
+--	                if ( S_AXI_ARESETN = '0' or reg_intr_ack(i) = '1') then            
+	                if ( S_AXI_ARESETN = '0') then            
 	                  intr_ff(i) <= '0';                                               
 	                  intr_ff2(i) <= '0';                                              
 	                else                                                               

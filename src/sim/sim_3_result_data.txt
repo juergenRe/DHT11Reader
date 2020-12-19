@@ -1,76 +1,87 @@
 
 -------------------------------------------------------------
-CHK:          0: issue reset                       
+CHK:       0: issue reset                       
 CHK: OK   res(3): exp: 0x00000000 act: 0x00000000
-CHK:          1: internal preset R0/R1             
-CHK:          2: read AXI R0                       
+CHK:       1: internal preset R0/R1             
+CHK:       2: read AXI R0                       
 CHK: OK   res(1): exp: 0x12345678 act: 0x12345678
-CHK:          3: read AXI R1                       
+CHK:       3: read AXI R1                       
 CHK: OK   res(1): exp: 0x000000A2 act: 0x000000A2
-CHK:          4: write AXI R2                      
-CHK:          5: internal read control             
+CHK:       4: write AXI R2                      
+CHK:       5: internal read control             
 CHK: OK   res(3): exp: 0x00000001 act: 0x00000001
-CHK:          6: write AXI R3                      
-CHK:          7: read AXI R3                       
+CHK:       6: write AXI R3                      
+CHK:       7: read AXI R3                       
 CHK: OK   res(1): exp: 0xA5A5A5A5 act: 0xA5A5A5A5
-CHK:          8: write AXI GIE                     
-CHK:          9: read AXI GIE                      
+CHK:       8: write AXI GIE                     
+CHK:       9: read AXI GIE                      
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         10: read AXI IST: int 1 set           
+CHK:      10: read AXI IST: int 1 set           
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         11: write AXI IER: enable both        
-CHK:         12: read AXI IER: both enabled        
+CHK:      11: write AXI IER: enable both        
+CHK:      12: read AXI IER: both enabled        
 CHK: OK   res(1): exp: 0x00000003 act: 0x00000003
-CHK:         13: read AXI IPE: pending 1           
+CHK:      13: read AXI IPE: pending 1           
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         14: write AXI IAC: ack int2           
-CHK:         15: read AXI IAC: always 0            
+CHK:      14: write AXI IAC: ack int2           
+CHK:      15: read AXI IAC: always 0            
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         16: read AXI IPE: int 1 still pending 
+CHK:      16: read AXI IPE: int 1 still pending 
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         17: write AXI IAC: ack int 1          
-CHK:         18: read AXI IAC: always 0            
+CHK:      17: write AXI IAC: ack int 1          
+CHK:      18: read AXI IAC: always 0            
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         19: read AXI IPE: no ints pending     
+CHK:      19: read AXI IPE: no ints pending     
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         20: status reset - no int             
-CHK:         21: read AXI IPE: no ints pending     
+CHK:      20: status reset - no int             
+CHK:      21: read AXI IPE: no ints pending     
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         22: status set: data avail, int 1     
-CHK:         23: read AXI IPE: int 1 pending       
+CHK:      22: status set: data avail, int 1     
+CHK:      23: read AXI IPE: int 1 pending       
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         24: status reset - no int             
-CHK:         25: read AXI IPE: int 1 pending       
+CHK:      24: status reset - no int             
+CHK:      25: read AXI IPE: int 1 pending       
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         26: set status: int 1 + 2 pending     
-CHK:         27: read AXI IPE: int 1 + 2 pending   
+CHK:      26: set status: int 1 + 2 pending     
+CHK:      27: read AXI IPE: int 1 + 2 pending   
 CHK: OK   res(1): exp: 0x00000003 act: 0x00000003
-CHK:         28: status reset - int 1 + 2 remaining
-CHK:         29: read AXI IPE: int 1 + 2 pending   
+CHK:      28: status reset - int 1 + 2 remaining
+CHK:      29: read AXI IPE: int 1 + 2 pending   
 CHK: OK   res(1): exp: 0x00000003 act: 0x00000003
-CHK:         30: write AXI IAC: ack int 1          
-CHK:         31: read AXI IPE: int 2 pending       
+CHK:      30: write AXI IAC: ack int 1          
+CHK:      31: read AXI IPE: int 2 pending       
 CHK: OK   res(1): exp: 0x00000002 act: 0x00000002
-CHK:         32: write AXI IAC: ack int 2          
-CHK:         33: read AXI IPE: no int pending      
+CHK:      32: write AXI IAC: ack int 2          
+CHK:      33: read AXI IPE: no int pending      
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         34: set status: int 1 + 2 pending     
-CHK:         35: set status: no int                
-CHK:         36: write AXI IAC: ack int 1 + 2      
-CHK:         37: read AXI IPE: no int pending      
+CHK:      34: set status: int 1 + 2 pending     
+CHK:      35: set status: no int                
+CHK:      36: write AXI IAC: ack int 1 + 2      
+CHK:      37: read AXI IPE: no int pending      
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         38: reset AXI GIE                     
+CHK:      38: reset AXI GIE                     
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         39: set status: int 1 + 2 pending     
-CHK:         40: set status: no int                
-CHK:         41: read AXI IPE: no int pending      
+CHK:      39: set status: int 1 + 2 pending     
+CHK:      40: set status: no int                
+CHK:      41: read AXI IPE: no int pending      
 CHK: OK   res(1): exp: 0x00000003 act: 0x00000003
-CHK:         42: set AXI GIE                       
+CHK:      42: set AXI GIE                       
 CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
-CHK:         43: read AXI IPE: int 1 + 2 pending   
+CHK:      43: read AXI IPE: int 1 + 2 pending   
 CHK: OK   res(1): exp: 0x00000003 act: 0x00000003
-CHK:         44: reset AXI GIE                     
+CHK:      44: reset AXI GIE                     
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
-CHK:         45: write AXI IAC: ack int 1 + 2      
-CHK:         46: read AXI IPE: int 1 + 2 pending   
+CHK:      45: write AXI IAC: ack int 1 + 2      
+CHK:      46: read AXI IPE: int 1 + 2 pending   
 CHK: OK   res(1): exp: 0x00000000 act: 0x00000000
+CHK:      47: set status: int 1 on rising edge  
+CHK:      48: set AXI GIE                       
+CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
+CHK:      49: read AXI IST: int 1               
+CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
+CHK:      50: read AXI IPE: int 1 pending       
+CHK: OK   res(1): exp: 0x00000001 act: 0x00000001
+CHK:      51: write AXI IAC: ack int 1          
+CHK:      52: set status: int 2 on rising edge  
+CHK:      53: read AXI IPE: int 2 pending       
+CHK: OK   res(1): exp: 0x00000002 act: 0x00000002

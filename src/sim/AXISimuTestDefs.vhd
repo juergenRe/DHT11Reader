@@ -372,7 +372,49 @@ constant test_data : t_test_ary := (
       intData   => (data => x"00000000", status => x"00", control => "00", op => None),
       extData   => (data => x"00000001", addr => "110000", op => Read),
       expResult => ( (f => true, res => x"00000000"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
-      desc      => "46: read AXI IPE: int 1 + 2 pending     ")
+      desc      => "46: read AXI IPE: int 1 + 2 pending     "),
+    47       => (            -- set interndata
+      trans     => TransInt,
+      intData   => (data => x"FEDCBA98", status => x"02", control => "00", op => Write),
+      extData   => (data => x"00000000", addr => "000000", op => None),
+      expResult => ( (f => false, res => x"00000000"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "47: set status: int 1 on rising edge    "),
+    48       => (           
+      trans     => TransExt,
+      intData   => (data => x"00000000", status => x"00", control => "00", op => None),
+      extData   => (data => x"00000001", addr => "100000", op => Write),
+      expResult => ( (f => true, res => x"00000001"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "48: set AXI GIE                         "),
+    49       => (           
+      trans     => TransExt,
+      intData   => (data => x"00000000", status => x"00", control => "00", op => None),
+      extData   => (data => x"00000001", addr => "101000", op => Read),
+      expResult => ( (f => true, res => x"00000001"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "49: read AXI IST: int 1                 "),
+    50       => (           
+      trans     => TransExt,
+      intData   => (data => x"00000000", status => x"00", control => "00", op => None),
+      extData   => (data => x"00000001", addr => "110000", op => Read),
+      expResult => ( (f => true, res => x"00000001"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "50: read AXI IPE: int 1 pending         "),
+    51       => (           
+      trans     => TransExt,
+      intData   => (data => x"00000000", status => x"00", control => "00", op => None),
+      extData   => (data => x"00000001", addr => "101100", op => Write),
+      expResult => ( (f => false, res => x"00000000"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "51: write AXI IAC: ack int 1            "),
+    52       => (            -- set interndata
+      trans     => TransInt,
+      intData   => (data => x"FEDCBA98", status => x"06", control => "00", op => Write),
+      extData   => (data => x"00000000", addr => "000000", op => None),
+      expResult => ( (f => false, res => x"00000000"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "52: set status: int 2 on rising edge    "),
+    53       => (           
+      trans     => TransExt,
+      intData   => (data => x"00000000", status => x"00", control => "00", op => None),
+      extData   => (data => x"00000001", addr => "110000", op => Read),
+      expResult => ( (f => true, res => x"00000002"), (f => false, res => x"00000000"), (f => false, res => x"00000000")), 
+      desc      => "53: read AXI IPE: int 2 pending         ")
    );
 
     -- function prototypes
